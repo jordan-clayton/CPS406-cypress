@@ -4,6 +4,7 @@
 
 -- TODO: create proper enumerated types
 CREATE TYPE problem_category as ENUM ('crime', 'fire', 'water', 'infrastructure', 'fire' );
+CREATE TYPE progress as ENUM ('opened', 'in-progress', 'closed');
 
 -- TODO: server-side validation for email/phone.
 CREATE TABLE public.profiles (
@@ -27,6 +28,8 @@ CREATE TABLE reports (
     latitude double precision,
     longitude double precision,
     description text,
+    verifiied boolean,
+    progress progress,
     -- If/when we eventually add compressed images, this 
     -- table will need a file-descriptor to locate it
     PRIMARY KEY (id)
