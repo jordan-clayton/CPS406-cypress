@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
 
+/// Let this be the 'client application for end users'
+/// Define a separate main for the internal 'employee application'
+// TODO: implement
 void main() {
   runApp(const MyApp());
 }
 
+// TODO: factor these out where appropriate.
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
