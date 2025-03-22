@@ -1,4 +1,5 @@
 // TODO: define equality; implement comparable
+// TODO: define toEntity method
 class User {
   String userID;
   String username;

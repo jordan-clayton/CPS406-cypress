@@ -28,6 +28,7 @@ enum ProgressStatus {
 }
 
 // TODO: define equality; implement comparable
+// TODO: define toEntity method
 class Report {
   num id;
   ProblemCategory category;

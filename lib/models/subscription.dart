@@ -13,6 +13,7 @@ enum NotificationMethod {
 }
 
 // TODO: define equality; implement comparable
+// TODO: define toEntity method
 class Subscription {
   String userID;
   num reportID;
