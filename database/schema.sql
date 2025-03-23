@@ -1,11 +1,14 @@
 -- Basic schema to be migrated/used in our backend solution
-
 -- If we use supabase/postress, run this script to set up the database.
 
 -- TODO: create proper enumerated types
 CREATE TYPE problem_category as ENUM ('crime', 'fire', 'water', 'infrastructure');
 CREATE TYPE progress as ENUM ('opened', 'in-progress', 'closed');
-CREATE TYPE notifcation_type as ENUM ('sms', 'email', 'push')
+CREATE TYPE notifcation_type as ENUM ('sms', 'email', 'push');
+CREATE TYPE duplicate_severity as ENUM ('unlikely', 'possible', 'suspected', 'confirmed');
+CREATE TYPE flagged_reason as ENUM ('malicious', 'false', 'ambiguous', 'non-emergency');
+-- TODO: implement some sort of levels of privilege type deal?
+CREATE TYPE auth as ENUM ('l2', 'l1', 'l0');
 
 -- TODO: server-side validation for email/phone.
 CREATE TABLE public.profiles (
@@ -17,8 +20,18 @@ CREATE TABLE public.profiles (
     email text,
     phone text,
 
-    PRIMARY KEY (id)
     FOREIGN KEY (id) REFERENCES auth.users ON DELETE CASCADE,
+    PRIMARY KEY (id)
+);
+
+CREATE TABLE employees (
+    id uuid NOT NULL,
+    first_name text,
+    last_name text,
+    employee_id bigint,
+    authority auth,
+    FOREIGN KEY (id) REFERENCES auth.users (id) ON DELETE CASCADE,
+    PRIMARY KEY (id)
 );
 
 CREATE TABLE reports (
@@ -43,4 +56,21 @@ CREATE TABLE subscriptions (
     FOREIGN KEY (user_id) REFERENCES public.profiles (id) ON DELETE CASCADE,
     FOREIGN KEY (report_id) REFERENCES reports (id) ON DELETE CASCADE,
     PRIMARY KEY (user_id, report_id, method)
+);
+
+create TABLE duplicates (
+    report_id bigint,
+    match_id bigint,
+    severity duplicate_severity,
+
+    FOREIGN KEY (report_id) REFERENCES reports (id) ON DELETE CASCADE,
+    FOREIGN KEY (match_id) REFERENCES reports (id) ON DELETE CASCADE,
+    PRIMARY KEY (report_id, match_id)
+);
+
+create TABLE flagged(
+    report_id bigint,
+    reason flagged_reason,
+    FOREIGN KEY (report_id) REFERENCES reports (id) ON DELETE CASCADE,
+    PRIMARY KEY (report_id, reason)
 );
