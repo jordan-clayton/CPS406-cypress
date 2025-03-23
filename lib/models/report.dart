@@ -1,4 +1,6 @@
-// TODO: define equality; implement comparable
+import 'package:equatable/equatable.dart';
+import 'package:vector_math/vector_math.dart';
+
 enum ProblemCategory {
   crime,
   fire,
@@ -27,18 +29,17 @@ enum ProgressStatus {
       };
 }
 
-// TODO: define equality; implement comparable
-// TODO: define toEntity method
-class Report {
-  num id;
-  ProblemCategory category;
-  num latitude;
-  num longitude;
-  String description;
-  bool verified;
-  ProgressStatus progress;
+class Report extends Equatable implements Comparable<Report> {
+  // This is unique and autoincrements.
+  final int id;
+  final ProblemCategory category;
+  final num latitude;
+  final num longitude;
+  final String description;
+  final bool verified;
+  final ProgressStatus progress;
 
-  Report(
+  const Report(
       {required this.id,
       required this.category,
       required this.latitude,
@@ -48,11 +49,30 @@ class Report {
       this.progress = ProgressStatus.opened});
 
   Report.fromEntity(Map<String, dynamic> entity)
-      : id = entity['id'] as num,
+      : id = entity['id'] as int,
         category = ProblemCategory.fromString(entity['category']),
         latitude = entity['latitude'] as num,
         longitude = entity['longitude'] as num,
         description = entity['description'],
         verified = entity['verified'] as bool,
         progress = ProgressStatus.fromString(entity['progress']);
+
+  Map<String, dynamic> toEntity() => {
+        'id': id,
+        'category': category.name,
+        'latitude': latitude,
+        'longitude': longitude,
+        'description': description,
+        'verified': verified,
+        'progress': progress.name
+      };
+
+  // This might go unusued; delete if unnecessary
+  Vector2 get geoVector => Vector2(longitude.toDouble(), latitude.toDouble());
+
+  @override
+  List<Object> get props => [id];
+
+  @override
+  int compareTo(Report other) => id.compareTo(other.id);
 }
