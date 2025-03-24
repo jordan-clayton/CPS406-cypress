@@ -2,9 +2,9 @@ import 'dart:developer';
 
 import 'package:flutter/foundation.dart';
 
-import '../../db/db_service.dart';
-import '../../db/query.dart';
-import '../../login/login_service.dart';
+import '../../db/interface/db_service.dart';
+import '../../db/interface/query.dart';
+import '../../login/interface/login_service.dart';
 import '../../models/duplicates.dart';
 import '../../models/flagged.dart';
 import '../../models/report.dart';

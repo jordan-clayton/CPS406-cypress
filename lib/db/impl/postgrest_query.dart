@@ -1,7 +1,7 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-import 'db_client.dart';
-import 'query.dart';
+import '../interface/db_client.dart';
+import '../interface/query.dart';
 
 class PostgrestDatabaseQuery implements DatabaseQuery {
   final PostgrestQueryBuilder _queryBuilder;

@@ -1,4 +1,4 @@
-import 'notification_service.dart';
+import '../interface/notification_service.dart';
 
 // We might be able to implement this in time using mailer/gmail
 class EmailNotificationServiceImpl implements EmailNotificationService {

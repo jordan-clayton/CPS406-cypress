@@ -2,14 +2,14 @@ import 'dart:developer';
 
 import 'package:collection/collection.dart';
 
-import '../../db/db_service.dart';
-import '../../db/query.dart';
-import '../../login/login_service.dart';
+import '../../db/interface/db_service.dart';
+import '../../db/interface/query.dart';
+import '../../login/interface/login_service.dart';
 import '../../models/duplicates.dart';
 import '../../models/employee.dart';
 import '../../models/flagged.dart';
 import '../../models/report.dart';
-import '../../notification/notification_service.dart';
+import '../../notification/interface/notification_service.dart';
 import '../common/report_utils.dart' as report_utils;
 
 class InternalController {

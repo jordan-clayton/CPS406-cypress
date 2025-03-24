@@ -1,6 +1,6 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-import 'login_service.dart';
+import '../interface/login_service.dart';
 
 class SupabaseLoginService implements LoginService {
   bool _initialized;

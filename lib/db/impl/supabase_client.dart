@@ -1,6 +1,6 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-import 'db_client.dart';
+import '../interface/db_client.dart';
 
 class SupabaseImpl implements PostgrestDatabaseClient {
   bool _initialized;

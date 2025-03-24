@@ -1,6 +1,6 @@
 import 'package:collection/collection.dart';
 
-import 'notification_service.dart';
+import '../interface/notification_service.dart';
 
 class InternalNotifcationService implements NotificationService {
   SmsNotificationService _smsNotificationService;
