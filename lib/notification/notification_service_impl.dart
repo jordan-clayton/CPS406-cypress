@@ -4,8 +4,11 @@ import 'notification_service.dart';
 class EmailNotificationServiceImpl implements EmailNotificationService {
   @override
   void sendNotifications(
-      {required String message, List<Map<String, dynamic>>? clientInfo}) {
+      {required String message,
+      List<Map<String, dynamic>>? clientInfo,
+      dynamic payload}) {
     // TODO: implement sendNotifications
+    throw UnimplementedError('EmailNotificationImpl not implemented');
   }
 }
 
@@ -13,8 +16,11 @@ class EmailNotificationServiceImpl implements EmailNotificationService {
 class SmsNotificationServiceImpl implements SmsNotificationService {
   @override
   void sendNotifications(
-      {required String message, List<Map<String, dynamic>>? clientInfo}) {
+      {required String message,
+      List<Map<String, dynamic>>? clientInfo,
+      dynamic payload}) {
     // TODO: implement sendNotifications
+    throw UnimplementedError('SmsNotificationImpl not implemented');
   }
 }
 
@@ -23,7 +29,10 @@ class SmsNotificationServiceImpl implements SmsNotificationService {
 class PushNotificationServiceImpl implements PushNotificationService {
   @override
   void sendNotifications(
-      {required String message, List<Map<String, dynamic>>? clientInfo}) {
+      {required String message,
+      List<Map<String, dynamic>>? clientInfo,
+      dynamic payload}) {
     // TODO: implement sendNotifications
+    throw UnimplementedError('PushNotificationImpl not implemented');
   }
 }

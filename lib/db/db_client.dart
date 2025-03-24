@@ -6,7 +6,5 @@ abstract interface class DatabaseClient {
 }
 
 abstract interface class PostgrestDatabaseClient implements DatabaseClient {
-  String? get userID;
-  bool get hasSession;
   PostgrestQueryBuilder from({required String table});
 }

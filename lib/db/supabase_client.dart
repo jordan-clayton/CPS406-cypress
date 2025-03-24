@@ -3,17 +3,20 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'db_client.dart';
 
 class SupabaseImpl implements PostgrestDatabaseClient {
-  bool _initialized = false;
+  bool _initialized;
   late SupabaseClient _cursor;
   String? _url;
   String? _anonKey;
 
-  SupabaseImpl({required String url, required String anonKey})
+  SupabaseImpl(
+      {required String url, required String anonKey, bool initialized = false})
       : _url = url,
-        _anonKey = anonKey;
+        _anonKey = anonKey,
+        _initialized = false;
 
   // It is possible to construct another supabase client manually via constructor
-  SupabaseImpl.fromInstance({required SupabaseClient client})
+  // It is also the case that successful client construction implies initialization
+  SupabaseImpl.withClient({required SupabaseClient client})
       : _cursor = client,
         _initialized = true;
 
@@ -21,23 +24,6 @@ class SupabaseImpl implements PostgrestDatabaseClient {
   // It would be in our interest to make sure the authentication and database
   // are the same client.
   void cursor(newCursor) => {_cursor = newCursor};
-
-  // TODO: migrate these two getters to a loginService.
-  @override
-  String? get userID {
-    if (!_initialized) {
-      throw Exception("Supabase client not initialized");
-    }
-    return _cursor.auth.currentUser?.id;
-  }
-
-  @override
-  bool get hasSession {
-    if (!_initialized) {
-      throw Exception("Supabase client not initialized");
-    }
-    return null != _cursor.auth.currentSession;
-  }
 
   @override
   PostgrestQueryBuilder from({required String table}) {
@@ -50,6 +36,9 @@ class SupabaseImpl implements PostgrestDatabaseClient {
 
   @override
   Future<void> initialize() async {
+    if (_initialized) {
+      return;
+    }
     await Supabase.initialize(url: _url!, anonKey: _anonKey!);
     _cursor = Supabase.instance.client;
     _initialized = true;

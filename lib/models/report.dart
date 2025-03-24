@@ -8,12 +8,15 @@ enum ProblemCategory {
   infrastructure;
 
   factory ProblemCategory.fromString(String pc) => switch (pc.toLowerCase()) {
-        'crime' => ProblemCategory.crime,
-        'fire' => ProblemCategory.fire,
-        'water' => ProblemCategory.water,
-        'infrastructure' => ProblemCategory.infrastructure,
+        'crime' => crime,
+        'fire' => fire,
+        'water' => water,
+        'infrastructure' => infrastructure,
         _ => throw FormatException('Invalid problem category format: $pc')
       };
+
+  // If we add more categories with complex string representations,
+  // override toString and replace uses of ProblemCategory.name
 }
 
 enum ProgressStatus {
@@ -48,17 +51,17 @@ class Report extends Equatable implements Comparable<Report> {
       this.verified = false,
       this.progress = ProgressStatus.opened});
 
-  Report.fromEntity(Map<String, dynamic> entity)
-      : id = entity['id'] as int,
-        category = ProblemCategory.fromString(entity['category']),
-        latitude = entity['latitude'] as num,
-        longitude = entity['longitude'] as num,
-        description = entity['description'],
-        verified = entity['verified'] as bool,
-        progress = ProgressStatus.fromString(entity['progress']);
+  factory Report.fromEntity(Map<String, dynamic> entity) => Report(
+      id: entity['id'] as int,
+      category: ProblemCategory.fromString(entity['category']),
+      latitude: entity['latitude'] as num,
+      longitude: entity['longitude'] as num,
+      description: entity['description'],
+      verified: entity['verified'] as bool,
+      progress: ProgressStatus.fromString(entity['progress']));
 
+  // When updating, add the ID field to the entity.
   Map<String, dynamic> toEntity() => {
-        'id': id,
         'category': category.name,
         'latitude': latitude,
         'longitude': longitude,
@@ -66,6 +69,23 @@ class Report extends Equatable implements Comparable<Report> {
         'verified': verified,
         'progress': progress.name
       };
+
+  Report copyWith(
+          {int? id,
+          ProblemCategory? category,
+          num? latitude,
+          num? longitude,
+          String? description,
+          bool? verified,
+          ProgressStatus? progress}) =>
+      Report(
+          id: id ?? this.id,
+          category: category ?? this.category,
+          latitude: latitude ?? this.latitude,
+          longitude: longitude ?? this.longitude,
+          description: description ?? this.description,
+          verified: verified ?? this.verified,
+          progress: progress ?? this.progress);
 
   // This might go unusued; delete if unnecessary
   Vector2 get geoVector => Vector2(longitude.toDouble(), latitude.toDouble());

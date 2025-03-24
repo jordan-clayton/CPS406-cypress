@@ -8,7 +8,8 @@ class DatabaseFilter {
   String operator;
   dynamic value;
 
-  DatabaseFilter({required this.column, required this.operator, this.value});
+  DatabaseFilter(
+      {required this.column, required this.operator, required this.value});
 }
 
 class DatabaseOrdering {

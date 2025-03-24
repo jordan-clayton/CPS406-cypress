@@ -17,16 +17,10 @@ class PostgrestDatabaseService implements DatabaseService {
   void client(newClient) => {_client = newClient};
 
   @override
-  String? get clientID => _client.userID;
-
-  @override
   Future<void> initialize() async {
     await _client.initialize();
     _initialized = true;
   }
-
-  @override
-  bool get validSession => _client.hasSession;
 
   @override
   bool get initialized => _initialized;
@@ -42,7 +36,7 @@ class PostgrestDatabaseService implements DatabaseService {
     if (retrieveNewRecord) {
       query = query.retrieveOnModify(columns: retrieveColumns);
     }
-    return (await query.execute()).first;
+    return (await query.execute()).firstOrNull ?? {};
   }
 
   @override
@@ -138,7 +132,7 @@ class PostgrestDatabaseService implements DatabaseService {
     if (retrieveUpdatedRecord) {
       query = query.retrieveOnModify(columns: retrieveColumns);
     }
-    return (await query.execute()).first;
+    return (await query.execute()).firstOrNull ?? {};
   }
 
   @override

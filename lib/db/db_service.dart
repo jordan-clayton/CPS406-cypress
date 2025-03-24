@@ -1,10 +1,7 @@
 import 'query.dart';
 
 abstract interface class DatabaseService {
-  String? get clientID;
-  bool get validSession;
   bool get initialized;
-
   Future<void> initialize();
   Future<Map<String, dynamic>> createEntry(
       {required String table,

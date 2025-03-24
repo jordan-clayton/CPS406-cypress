@@ -24,15 +24,17 @@ class InternalNotifcationService implements NotificationService {
 
   @override
   void sendNotifications(
-      {required String message, List<Map<String, dynamic>>? clientInfo}) {
+      {required String message,
+      List<Map<String, dynamic>>? clientInfo,
+      dynamic payload}) {
     final data =
         groupBy(clientInfo ?? [], (info) => info['notification_method']);
 
     _smsNotificationService.sendNotifications(
-        message: message, clientInfo: data['sms']?.cast());
+        message: message, clientInfo: data['sms']?.cast(), payload: payload);
     _emailNotificationService.sendNotifications(
-        message: message, clientInfo: data['email']?.cast());
+        message: message, clientInfo: data['email']?.cast(), payload: payload);
     _pushNotificationService.sendNotifications(
-        message: message, clientInfo: data['push']?.cast());
+        message: message, clientInfo: data['push']?.cast(), payload: payload);
   }
 }

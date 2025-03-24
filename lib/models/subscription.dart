@@ -7,14 +7,16 @@ enum NotificationMethod implements Comparable<NotificationMethod> {
 
   factory NotificationMethod.fromString(String nm) =>
       switch (nm.toLowerCase()) {
-        'sms' => NotificationMethod.sms,
-        'email' => NotificationMethod.email,
-        'push' => NotificationMethod.push,
+        'sms' => sms,
+        'email' => email,
+        'push' => push,
         _ => throw FormatException('Invalid Notification format: $nm')
       };
 
+  // If we add more categories with complex string representations,
+  // override toString and replace uses of ProblemCategory.name
   @override
-  int compareTo(NotificationMethod other) => index - other.index;
+  int compareTo(NotificationMethod other) => index.compareTo(other.index);
 }
 
 class SubscriptionDTO {
@@ -38,11 +40,11 @@ class Subscription extends Equatable implements Comparable<Subscription> {
       required this.reportID,
       required this.notificationMethod});
 
-  Subscription.fromEntity(Map<String, dynamic> entity)
-      : userID = entity['user_id'] as String,
-        reportID = entity['report_id'] as int,
-        notificationMethod =
-            NotificationMethod.fromString(entity['notification_method']);
+  factory Subscription.fromEntity(Map<String, dynamic> entity) => Subscription(
+      userID: entity['user_id'] as String,
+      reportID: entity['report_id'] as int,
+      notificationMethod:
+          NotificationMethod.fromString(entity['notification_method']));
 
   Map<String, dynamic> toEntity() => {
         'user_id': userID,

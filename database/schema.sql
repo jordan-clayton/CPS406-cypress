@@ -6,7 +6,7 @@ CREATE TYPE problem_category as ENUM ('crime', 'fire', 'water', 'infrastructure'
 CREATE TYPE progress as ENUM ('opened', 'in-progress', 'closed');
 CREATE TYPE notifcation_type as ENUM ('sms', 'email', 'push');
 CREATE TYPE duplicate_severity as ENUM ('unlikely', 'possible', 'suspected', 'confirmed');
-CREATE TYPE flagged_reason as ENUM ('malicious', 'false', 'ambiguous', 'non-emergency');
+CREATE TYPE flagged_reason as ENUM ('malicious', 'false-report', 'ambiguous', 'non-emergency');
 -- TODO: implement some sort of levels of privilege type deal?
 CREATE TYPE auth as ENUM ('l2', 'l1', 'l0');
 
@@ -28,10 +28,10 @@ CREATE TABLE employees (
     id uuid NOT NULL,
     first_name text,
     last_name text,
-    employee_id bigint,
+    employee_id bigint NOT NULL,
     authority auth,
     FOREIGN KEY (id) REFERENCES auth.users (id) ON DELETE CASCADE,
-    PRIMARY KEY (id)
+    PRIMARY KEY (id, employee_id)
 );
 
 CREATE TABLE reports (

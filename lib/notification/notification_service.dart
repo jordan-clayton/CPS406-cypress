@@ -1,6 +1,8 @@
 abstract interface class NotificationService {
   void sendNotifications(
-      {required String message, List<Map<String, dynamic>>? clientInfo});
+      {required String message,
+      List<Map<String, dynamic>>? clientInfo,
+      dynamic payload});
 }
 
 abstract interface class EmailNotificationService

@@ -10,3 +10,9 @@ bool insideToronto(Report r1) =>
         lat2: constants.torontoLat,
         long2: constants.torontoLong) <=
     constants.torontoRadius;
+
+// TODO: regex
+bool validEmail(String email) =>
+    throw UnimplementedError("email validation not implemented");
+bool validPhone(String phone) =>
+    throw UnimplementedError("phone validation not implemented");
