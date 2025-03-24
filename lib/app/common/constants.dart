@@ -12,3 +12,9 @@ const double haversine = 6371;
 
 const num categoryScore = 0.3;
 const num closeToScore = 0.1;
+
+/// Pass these in as command line arguments, or store accordingly
+/// It's not imperative that these remain hidden, but it would be good to
+/// keep them out of the commit history
+const supabaseAnonKey = '';
+const supabaseURL = '';

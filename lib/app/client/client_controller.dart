@@ -17,6 +17,8 @@ class ClientController {
   User? _user;
   ValueNotifier<bool> loggedIn;
 
+  /// Assume that the services have already been initialized before
+  /// being passed to the controller
   ClientController(
       {required DatabaseService databaseService,
       required LoginService loginService,
@@ -28,7 +30,6 @@ class ClientController {
         loggedIn = ValueNotifier(loggedIn);
 
   void databaseService(newService) => {_databaseService = newService};
-
   void loginService(newService) => {_loginService = newService};
 
   /// To supply current reports to the frontend
@@ -212,6 +213,14 @@ class ClientController {
     } on Exception catch (e, s) {
       _logError(exception: e, stacktrace: s);
       return Future.error(e, s);
+    }
+  }
+
+  /// To be called when a token is refreshed but the user has not been grabbed
+  /// from the database.
+  Future<void> tryRestoreUserSession() async {
+    if (_loginService.hasSession) {
+      await _getUserData();
     }
   }
 
