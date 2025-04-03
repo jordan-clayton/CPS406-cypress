@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'app/client/main_screen.dart';
+import 'app/client/report_page.dart'; 
 
 /// Let this be the 'client application for end users'
 /// Define a separate main for the internal 'employee application'
@@ -18,7 +19,10 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: MainScreen(), 
+      home: MainScreen(),
+      routes: {
+        '/report': (context) => ReportPage(),
+      }, 
     );
   }
 }
