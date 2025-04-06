@@ -22,7 +22,7 @@ class ReportPickerMap extends StatelessWidget {
   final void Function()? onDismiss;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(context) {
     var markers = reports
         .map((r) => Marker(
               point: LatLng(r.latitude.toDouble(), r.longitude.toDouble()),
@@ -42,7 +42,8 @@ class ReportPickerMap extends StatelessWidget {
         options: MapOptions(
             initialCenter: initialLocation ??
                 const LatLng(constants.torontoLat, constants.torontoLong),
-            onTap: (_, p) => onDismiss?.call()),
+            onTap: (_, p) => onDismiss?.call(),
+            keepAlive: true),
         children: [mapLayer, MarkerLayer(markers: markers)]);
   }
 }

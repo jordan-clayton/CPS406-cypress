@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../app/client/client_controller.dart';
 import '../../../models/report.dart';
+import '../../common/widgets/floating_menu_button.dart';
 import '../widgets/map_report_picker.dart';
 
 class DuplicatesScreen extends StatefulWidget {
@@ -79,6 +80,13 @@ class _DuplicatesScreenState extends State<DuplicatesScreen> {
                     initialLocation: widget.controller.clientLocation,
                     onLocationPicked: onLocationPicked,
                     onDismiss: onDismiss),
+                FloatingMenuButton(
+                  button: IconButton(
+                      icon: const Icon(Icons.arrow_back_rounded),
+                      onPressed: () {
+                        Navigator.pop(context);
+                      }),
+                ),
                 if (!done)
                   const Center(child: CircularProgressIndicator.adaptive())
               ]);

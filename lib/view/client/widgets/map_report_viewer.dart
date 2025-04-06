@@ -22,7 +22,7 @@ class _ReportViewerMapState extends State<ReportViewerMap> {
   Widget build(context) => FutureBuilder(
       future: widget.controller.getCurrentReports(),
       builder: (context, snapshot) {
-        List<Widget> children = [mapLayer];
+        List<Widget> children = [mapLayer, mapAttribution];
         // If an error handler has been provided, call it on an error.
         if (snapshot.hasError) {
           widget.handleError?.call();
@@ -53,6 +53,7 @@ class _ReportViewerMapState extends State<ReportViewerMap> {
         return FlutterMap(
           options: MapOptions(
             initialCenter: widget.controller.clientLocation,
+            keepAlive: true,
           ),
           children: children,
         );

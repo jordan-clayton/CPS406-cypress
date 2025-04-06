@@ -12,12 +12,20 @@ import '../common/constants.dart' as constants;
 /// Initialization function to start the app using supabase implementation
 Future<ClientController> initializeControllerWithSupabase() async {
   // Initialize clients
-  await Supabase.initialize(
-      url: constants.supabaseURL, anonKey: constants.supabaseAnonKey);
+  SupabaseClient? supabase;
 
-  final supabase = Supabase.instance;
-  final dbClient = SupabaseImpl.withClient(client: supabase.client);
-  final loginService = SupabaseLoginService.withClient(client: supabase.client);
+  // There is no field I can check and .initialize throws when called twice.
+  // This has to be in a try block :<
+  try {
+    await Supabase.initialize(
+        url: constants.supabaseURL, anonKey: constants.supabaseAnonKey);
+    supabase = Supabase.instance.client;
+  } catch (e) {
+    supabase = SupabaseClient(constants.supabaseURL, constants.supabaseAnonKey);
+  }
+
+  final dbClient = SupabaseImpl.withClient(client: supabase);
+  final loginService = SupabaseLoginService.withClient(client: supabase);
   final dbService = PostgrestDatabaseService(client: dbClient);
   final locationService = CypressLocationService();
   final controller = ClientController(
