@@ -1,3 +1,6 @@
+import 'dart:io';
+
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
@@ -22,6 +25,9 @@ class _ReportViewerMapState extends State<ReportViewerMap> {
   Widget build(context) => FutureBuilder(
       future: widget.controller.getCurrentReports(),
       builder: (context, snapshot) {
+        // For "Apple-y" page transitions.
+        bool apple = Platform.isMacOS || Platform.isIOS;
+
         List<Widget> children = [mapLayer, mapAttribution];
         // If an error handler has been provided, call it on an error.
         if (snapshot.hasError) {
@@ -38,10 +44,15 @@ class _ReportViewerMapState extends State<ReportViewerMap> {
                         child: GestureDetector(
                           onTap: () => Navigator.push(
                               context,
-                              MaterialPageRoute(
-                                  builder: (context) => ReportDetailScreen(
-                                      report: r,
-                                      controller: widget.controller))),
+                              (apple)
+                                  ? CupertinoPageRoute(
+                                      builder: (context) => ReportDetailScreen(
+                                          report: r,
+                                          controller: widget.controller))
+                                  : MaterialPageRoute(
+                                      builder: (context) => ReportDetailScreen(
+                                          report: r,
+                                          controller: widget.controller))),
                           child: const Icon(Icons.location_pin,
                               size: 30, color: Colors.black),
                         ),

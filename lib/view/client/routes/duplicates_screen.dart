@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../app/client/client_controller.dart';
 import '../../../models/report.dart';
+import '../../common/widgets/adaptive_appbar.dart';
 import '../../common/widgets/floating_menu_button.dart';
 import '../widgets/map_report_picker.dart';
 
@@ -48,6 +49,7 @@ class _DuplicatesScreenState extends State<DuplicatesScreen> {
 
   @override
   Widget build(BuildContext context) => Scaffold(
+        appBar: adaptiveAppBar(title: 'Duplicates which report?'),
         body: FutureBuilder(
             future: _loadReports,
             builder: (context, snapshot) {

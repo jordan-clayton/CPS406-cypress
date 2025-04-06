@@ -7,8 +7,8 @@ import '../../../app/client/client_controller.dart';
 // We might be able to get away with stateless widgets.
 // The ValueListenablebuilder is itself stateful.
 class ReportFormScreen extends StatefulWidget {
-  // This cannot be marked as const; the controller is heap-allocated.
-  ReportFormScreen({super.key, required this.controller});
+  // TODO: determine whether this can actually be const.
+  const ReportFormScreen({super.key, required this.controller});
   final ClientController controller;
   @override
   State<ReportFormScreen> createState() => _ReportFormScreenState();

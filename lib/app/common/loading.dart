@@ -8,7 +8,6 @@ import '../client/client_controller.dart';
 import '../common/constants.dart' as constants;
 
 // NOTE: write other implementation initializers as appropriate
-// TODO: locationService Impl.
 /// Initialization function to start the app using supabase implementation
 Future<ClientController> initializeControllerWithSupabase() async {
   // Initialize clients
