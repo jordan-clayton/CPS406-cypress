@@ -1,9 +1,11 @@
 import 'dart:developer';
 
 import 'package:flutter/foundation.dart';
+import 'package:latlong2/latlong.dart';
 
 import '../../db/interface/db_service.dart';
 import '../../db/interface/query.dart';
+import '../../location/interface/location_service.dart';
 import '../../login/interface/login_service.dart';
 import '../../models/duplicates.dart';
 import '../../models/flagged.dart';
@@ -14,6 +16,7 @@ import '../../models/user.dart';
 class ClientController {
   DatabaseService _databaseService;
   LoginService _loginService;
+  LocationService _locationService;
   User? _user;
   ValueNotifier<bool> loggedIn;
 
@@ -22,15 +25,28 @@ class ClientController {
   ClientController(
       {required DatabaseService databaseService,
       required LoginService loginService,
+      required LocationService locationService,
       User? user,
       bool loggedIn = false})
       : _databaseService = databaseService,
         _loginService = loginService,
+        _locationService = locationService,
         _user = user,
         loggedIn = ValueNotifier(loggedIn);
 
   void databaseService(newService) => {_databaseService = newService};
+
   void loginService(newService) => {_loginService = newService};
+
+  void locationService(newService) => {_locationService = newService};
+
+  // TODO: it's likely wise to add close methods to all services, in case we need explicit cleanup
+  // Dart doesn't have destructors :<, otherwise I'd hide this.
+  void close() {
+    _locationService.close();
+  }
+
+  LatLng get clientLocation => _locationService.getLocation();
 
   /// To supply current reports to the frontend
   /// Includes unverified reports; convey this to the user in the map to encourage
