@@ -1,4 +1,7 @@
+import 'dart:math';
+
 import 'package:cypress/app/common/utils.dart';
+import 'package:fuzzywuzzy/fuzzywuzzy.dart';
 import 'package:intl/intl.dart';
 
 import '../../models/report.dart';
@@ -12,8 +15,9 @@ num duplicateReportScore({required Report r1, required Report r2}) {
   num score = 0.0;
   score += (reportCloseTo(r1: r1, r2: r2)) ? constants.closeToScore : 0.0;
   score += (r1.category == r2.category) ? constants.categoryScore : 0.0;
-  score += reportWordFrequency(r1: r1, r2: r2);
-  return score;
+  score += constants.frequencyWeight *
+      reportWordSimilarity(desc1: r1.description, desc2: r2.description);
+  return max(score, 100);
 }
 
 bool reportCloseTo({required Report r1, required Report r2}) =>
@@ -24,13 +28,14 @@ bool reportCloseTo({required Report r1, required Report r2}) =>
         long2: r2.longitude) <=
     constants.locationDistanceThreshold;
 
-// NOTE: word-frequency might not be the smartest way to go about this
-// NLP would be out of scope for the project, but would be the best way to
-// solve this problem
-double reportWordFrequency({required Report r1, required Report r2}) {
-  // Proposed (naive) approach: Make two hashmaps to collect non-conjunctions/articles
-  // Then take the difference of words that appear in each hashmap.
-  throw UnimplementedError('TODO! Word frequency comparison');
+// Does fuzzy string matching to determine how similar descriptions are
+// Takes the weightedRatio, which returns the "best" (ie. highest of the
+// fuzz-matching algorithms, eg. Levenstein, Token set).
+// The closer the strings match, the higher the score.
+// NOTE: this does not account for semantics and relies on duplicate reports
+// containing -some- degree of lexical redundancy.
+double reportWordSimilarity({required String desc1, required String desc2}) {
+  return weightedRatio(desc1, desc2) / 100;
 }
 
 String generateReportMessage({required Report r}) {

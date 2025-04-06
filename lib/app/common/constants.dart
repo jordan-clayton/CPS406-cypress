@@ -10,8 +10,10 @@ const double epsilon = 4.94065645841247E-324;
 // in kilometers
 const double haversine = 6371;
 
-const num categoryScore = 0.3;
+// Weighting factors to control the comparison.
+const num categoryScore = 0.2;
 const num closeToScore = 0.1;
+const num frequencyWeight = 0.7;
 
 /// Pass these in as command line arguments, or store accordingly
 /// It's not imperative that these remain hidden, but it would be good to
