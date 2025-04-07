@@ -18,11 +18,14 @@ class DuplicatesScreen extends StatefulWidget {
 class _DuplicatesScreenState extends State<DuplicatesScreen> {
   late Future<List<Report>> _loadReports;
   int? _selectedReport;
+  // For guarding against grandma clicks.
+  late ValueNotifier<bool> _loading;
 
   @override
   void initState() {
     super.initState();
     _loadReports = _getReports();
+    _loading = ValueNotifier(true);
   }
 
   // Using a microtask here to bump the priority of the scheduler and run this
@@ -82,23 +85,53 @@ class _DuplicatesScreenState extends State<DuplicatesScreen> {
                     initialLocation: widget.controller.clientLocation,
                     onLocationPicked: onLocationPicked,
                     onDismiss: onDismiss),
-                FloatingMenuButton(
-                  button: IconButton(
-                      icon: const Icon(Icons.arrow_back_rounded),
-                      onPressed: () {
-                        Navigator.pop(context);
-                      }),
-                ),
+                ValueListenableBuilder(
+                    valueListenable: _loading,
+                    builder: (context, loading, child) {
+                      return FloatingMenuButton(
+                        button: IconButton(
+                            icon: const Icon(Icons.arrow_back_rounded),
+                            onPressed: (loading)
+                                ? null
+                                : () async {
+                                    _loading.value = true;
+                                    Navigator.pop(context);
+                                    await Future.delayed(
+                                            const Duration(milliseconds: 200))
+                                        .then((_) {
+                                      if (context.mounted) {
+                                        _loading.value = false;
+                                      }
+                                    });
+                                  }),
+                      );
+                    }),
                 if (!done)
                   const Center(child: CircularProgressIndicator.adaptive())
               ]);
             }),
-        floatingActionButton: FloatingActionButton(
-            child: (null != _selectedReport)
-                ? const Icon(Icons.check_rounded)
-                : const Icon(Icons.arrow_back_rounded),
-            onPressed: () {
-              Navigator.pop(context, _selectedReport);
+        floatingActionButton: ValueListenableBuilder(
+            valueListenable: _loading,
+            builder: (context, loading, child) {
+              return FloatingActionButton(
+                  onPressed: (loading)
+                      ? null
+                      : () async {
+                          _loading.value = true;
+                          Navigator.pop(context, _selectedReport);
+                          await Future.delayed(
+                                  const Duration(milliseconds: 200))
+                              .then((_) {
+                            if (context.mounted) {
+                              _loading.value = false;
+                            }
+                          });
+                        },
+                  child: (loading)
+                      ? const CircularProgressIndicator.adaptive()
+                      : (null != _selectedReport)
+                          ? const Icon(Icons.check_rounded)
+                          : const Icon(Icons.arrow_back_rounded));
             }),
       );
 }

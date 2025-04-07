@@ -17,12 +17,15 @@ class _LocationPickerState extends State<LocationPicker> {
   LatLng? _selectedLocation;
   LatLng? _mapCenter;
   double? _cameraZoom;
+  // For preventing grandma-clicks
+  late ValueNotifier<bool> _loading;
 
   @override
   initState() {
     super.initState();
     _selectedLocation = widget.initialLocation;
     _mapCenter = widget.initialLocation;
+    _loading = ValueNotifier(false);
   }
 
   void onLocationPicked(newLoc) => setState(() {
@@ -46,19 +49,51 @@ class _LocationPickerState extends State<LocationPicker> {
           onLocationPicked: onLocationPicked,
           onPositionChanged: onPositionChanged,
         ),
-        FloatingMenuButton(
-          button: IconButton(
-              icon: const Icon(Icons.arrow_back_rounded),
-              onPressed: () {
-                Navigator.pop(context, _selectedLocation);
-              }),
-        ),
+        ValueListenableBuilder(
+            valueListenable: _loading,
+            builder: (context, loading, child) {
+              return FloatingMenuButton(
+                button: IconButton(
+                    icon: (loading)
+                        ? const CircularProgressIndicator.adaptive()
+                        : const Icon(Icons.arrow_back_rounded),
+                    onPressed: (loading)
+                        ? null
+                        : () async {
+                            _loading.value = true;
+                            Navigator.pop(context, null);
+                            await Future.delayed(
+                                    const Duration(milliseconds: 200))
+                                .then((_) {
+                              if (context.mounted) {
+                                _loading.value = false;
+                              }
+                            });
+                          }),
+              );
+            }),
       ]),
       floatingActionButton: (null != _selectedLocation)
-          ? FloatingActionButton(
-              child: const Icon(Icons.check_rounded),
-              onPressed: () {
-                Navigator.pop(context, _selectedLocation);
+          ? ValueListenableBuilder(
+              valueListenable: _loading,
+              builder: (context, loading, child) {
+                return FloatingActionButton(
+                    onPressed: (loading)
+                        ? null
+                        : () async {
+                            _loading.value = true;
+                            Navigator.pop(context, _selectedLocation);
+                            await Future.delayed(
+                                    const Duration(milliseconds: 200))
+                                .then((_) {
+                              if (context.mounted) {
+                                _loading.value = false;
+                              }
+                            });
+                          },
+                    child: (loading)
+                        ? const CircularProgressIndicator.adaptive()
+                        : const Icon(Icons.check_rounded));
               })
           : null,
     );
