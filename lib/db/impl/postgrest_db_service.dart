@@ -1,8 +1,7 @@
-import 'package:cypress/db/impl/postgrest_query.dart';
-import 'package:cypress/db/interface/query.dart';
-
 import '../interface/db_client.dart';
 import '../interface/db_service.dart';
+import '../interface/query.dart';
+import 'postgrest_query.dart';
 
 // NOTE: these can throw PostgrestExceptions (and other Exceptions) from the DB client/query.
 // Catch them higher up.

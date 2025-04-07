@@ -1,11 +1,11 @@
 import 'dart:developer';
 
-import 'package:cypress/view/client/routes/home_screen.dart';
 import 'package:flutter/material.dart';
 
 import '../../app/client/client_controller.dart';
 import '../common/routes/error_screen.dart';
 import '../common/routes/loading_screen.dart';
+import 'routes/home_screen.dart';
 
 class ClientApplication extends StatefulWidget {
   const ClientApplication({super.key, required this.initializeController});

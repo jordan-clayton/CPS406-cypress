@@ -1,7 +1,6 @@
 import 'dart:io';
 
 import 'package:adaptive_dialog/adaptive_dialog.dart';
-import 'package:cypress/view/client/routes/report_form_screen.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
@@ -9,6 +8,7 @@ import '../../../app/client/client_controller.dart';
 import '../../common/widgets/floating_menu_button.dart';
 import '../widgets/map_report_viewer.dart';
 import 'login_screen.dart';
+import 'report_form_screen.dart';
 
 /// A basic scaffold containing the map, a floating action button to make reports
 /// If the client is not registered/logged in, push to the sign in/log in screen
