@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:adaptive_dialog/adaptive_dialog.dart';
@@ -15,28 +16,98 @@ import 'report_form_screen.dart';
 /// If the client is registered, push to the report form screen
 /// In all routing, pass the controller as an argument to the page generator
 
-// TODO: periodic refresh/app recycle state refresh.
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key, required this.controller});
+  const HomeScreen(
+      {super.key, required this.controller, required this.routeObserver});
 
   final ClientController controller;
+  final RouteObserver<ModalRoute<void>> routeObserver;
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
+class _HomeScreenState extends State<HomeScreen>
+    with WidgetsBindingObserver, RouteAware {
   late ValueNotifier<bool> _loading;
+  late Timer _queryTimer;
+  late bool _isVisible;
 
   @override
   initState() {
     super.initState();
+    _resetQueryTimer();
+    _isVisible = true;
     _loading = ValueNotifier(false);
   }
 
   @override
+  dispose() {
+    if (_queryTimer.isActive) {
+      _queryTimer.cancel();
+    }
+
+    widget.routeObserver.unsubscribe(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(state) {
+    // Stop the timer if the app is backgrounded or otherwise
+    // This behaves differently depending on device and may not be called.
+    if (AppLifecycleState.resumed != state) {
+      _queryTimer.cancel();
+      return;
+    }
+
+    if (!mounted) {
+      return;
+    }
+
+    // Trigger a rebuild to force the DB to query again.
+    // Restart the timer.
+    setState(() {
+      if (_queryTimer.isActive) {
+        _queryTimer.cancel();
+      }
+      _resetQueryTimer();
+    });
+  }
+
+  @override
+  void didPopNext() {
+    _isVisible = true;
+  }
+
+  @override
+  void didPushNext() {
+    _isVisible = false;
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (null == ModalRoute.of(context)) {
+      return;
+    }
+    widget.routeObserver.subscribe(this, ModalRoute.of(context)!);
+  }
+
+  void _resetQueryTimer() {
+    _queryTimer = Timer.periodic(const Duration(seconds: 1), (_) {
+      if (!mounted) {
+        return;
+      }
+      if (!_isVisible) {
+        return;
+      }
+      setState(() {});
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
-    bool apple = Platform.isMacOS || Platform.isIOS;
+    final apple = Platform.isMacOS || Platform.isIOS;
     return PopScope(
       canPop: false,
       child: ValueListenableBuilder(
@@ -85,7 +156,10 @@ class _HomeScreenState extends State<HomeScreen> {
                     controller: widget.controller,
                     handleError: () {
                       WidgetsBinding.instance.addPostFrameCallback((_) {
-                        var errorBar = SnackBar(
+                        if (!mounted) {
+                          return;
+                        }
+                        final errorBar = SnackBar(
                           content: const Text('Error retrieving new reports.'),
                           action: SnackBarAction(
                               label: 'Retry?',

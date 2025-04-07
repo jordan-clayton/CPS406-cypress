@@ -26,7 +26,7 @@ class _ReportViewerMapState extends State<ReportViewerMap> {
       future: widget.controller.getCurrentReports(),
       builder: (context, snapshot) {
         // For "Apple-y" page transitions.
-        bool apple = Platform.isMacOS || Platform.isIOS;
+        final apple = Platform.isMacOS || Platform.isIOS;
 
         List<Widget> children = [mapLayer, mapAttribution];
         // If an error handler has been provided, call it on an error.

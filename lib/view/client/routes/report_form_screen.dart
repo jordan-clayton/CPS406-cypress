@@ -58,8 +58,8 @@ class _ReportFormScreenState extends State<ReportFormScreen> {
 
   @override
   Widget build(BuildContext context) {
-    bool apple = Platform.isMacOS || Platform.isIOS;
-    bool canSubmit = _description.isNotEmpty && null != _category;
+    final apple = Platform.isMacOS || Platform.isIOS;
+    final canSubmit = _description.isNotEmpty && null != _category;
     return ValueListenableBuilder(
         valueListenable: _loading,
         builder: (context, loading, child) {
@@ -95,7 +95,7 @@ class _ReportFormScreenState extends State<ReportFormScreen> {
                       : () async {
                           // Move to the location picker screen.
                           _loading.value = true;
-                          var newLoc = await Navigator.push(
+                          final newLoc = await Navigator.push(
                               this.context,
                               (apple)
                                   ? CupertinoPageRoute(
