@@ -78,7 +78,7 @@ class _LoginFormScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
-    bool apple = Platform.isMacOS || Platform.isIOS;
+    final apple = Platform.isMacOS || Platform.isIOS;
     return Scaffold(
       appBar: adaptiveAppBar(title: 'Log In'),
       body: ListView(children: [

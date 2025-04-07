@@ -61,7 +61,7 @@ class _DuplicatesScreenState extends State<DuplicatesScreen> {
         body: FutureBuilder(
             future: _loadReports,
             builder: (context, snapshot) {
-              var done = snapshot.connectionState == ConnectionState.done;
+              final done = snapshot.connectionState == ConnectionState.done;
               if (snapshot.hasError ||
                   (done && (snapshot.data?.isEmpty ?? true))) {
                 WidgetsBinding.instance.addPostFrameCallback((_) {

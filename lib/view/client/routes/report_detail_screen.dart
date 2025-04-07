@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:adaptive_dialog/adaptive_dialog.dart';
@@ -23,7 +24,8 @@ class ReportDetailScreen extends StatefulWidget {
 }
 
 // TODO: subscriptions.
-class _ReportDetailScreenState extends State<ReportDetailScreen> {
+class _ReportDetailScreenState extends State<ReportDetailScreen>
+    with WidgetsBindingObserver {
   // Guard against grandma clicks.
   late ValueNotifier<bool> _loading;
 
@@ -35,6 +37,7 @@ class _ReportDetailScreenState extends State<ReportDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final apple = Platform.isMacOS || Platform.isIOS;
     return Scaffold(
       appBar: adaptiveAppBar(title: 'Report: ${widget.report.id}'),
       body: ListView(children: [
@@ -46,9 +49,18 @@ class _ReportDetailScreenState extends State<ReportDetailScreen> {
                 return FilledButton(
                     onPressed: (loading)
                         ? null
-                        : () {
-                            // TODO: modal drawer with choices for subscription.
-                            // Atm, no validation in place for push/email/etc.
+                        : () async {
+                            // TODO: Subscription screen
+                            _loading.value = true;
+                            final subscriptionDTO = await Navigator.push(
+                                context,
+                                (apple)
+                                    ? CupertinoPageRoute(
+                                        builder: (context) =>
+                                            throw UnimplementedError())
+                                    : MaterialPageRoute(
+                                        builder: (context) =>
+                                            throw UnimplementedError()));
                           },
                     child: const Text("Subscribe to updates"));
               }),
@@ -184,9 +196,9 @@ class _ReportDetailScreenState extends State<ReportDetailScreen> {
                       ? null
                       : () async {
                           if (widget.controller.loggedIn.value) {
-                            var apple = Platform.isMacOS || Platform.isIOS;
+                            final apple = Platform.isMacOS || Platform.isIOS;
                             // Push to the duplicates picker.
-                            var matchID = await Navigator.push(
+                            final matchID = await Navigator.push(
                                 context,
                                 (apple)
                                     ? CupertinoPageRoute(

@@ -18,9 +18,12 @@ class ClientApplication extends StatefulWidget {
 
 class _ClientApplicationState extends State<ClientApplication> {
   late Future<ClientController> _initController;
+  // This needs to persist across rebuilds.
+  late final RouteObserver<ModalRoute<void>> _routeObserver;
   @override
   initState() {
     super.initState();
+    _routeObserver = RouteObserver();
     _initController = widget.initializeController;
   }
 
@@ -32,6 +35,7 @@ class _ClientApplicationState extends State<ClientApplication> {
           colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
           useMaterial3: true,
         ),
+        navigatorObservers: [_routeObserver],
         home: FutureBuilder(
             future: _initController,
             builder: (context, snapshot) {
@@ -55,12 +59,15 @@ class _ClientApplicationState extends State<ClientApplication> {
                     error: error, stackTrace: snapshot.stackTrace);
                 return ErrorScreen(
                   errorMessage: 'Error loading controller',
-                  recoveryFunction: () => setState(() {}),
+                  recoveryFunction: () => setState(() {
+                    _initController = widget.initializeController;
+                  }),
                 );
               }
 
               return HomeScreen(
                 controller: snapshot.data!,
+                routeObserver: _routeObserver,
               );
             }));
   }

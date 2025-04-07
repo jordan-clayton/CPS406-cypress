@@ -97,7 +97,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
 
   @override
   Widget build(BuildContext context) {
-    bool apple = Platform.isMacOS || Platform.isIOS;
+    final apple = Platform.isMacOS || Platform.isIOS;
     return Scaffold(
       appBar: adaptiveAppBar(title: 'Sign Up'),
       body: ListView(children: _buildAdaptiveTextFields(apple: apple)),
