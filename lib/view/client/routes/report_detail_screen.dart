@@ -11,7 +11,7 @@ import '../../../models/report.dart';
 import '../../common/widgets/adaptive_appbar.dart';
 import 'duplicates_screen.dart';
 
-class ReportDetailScreen extends StatelessWidget {
+class ReportDetailScreen extends StatefulWidget {
   const ReportDetailScreen(
       {super.key, required this.report, required this.controller});
 
@@ -19,12 +19,40 @@ class ReportDetailScreen extends StatelessWidget {
   final ClientController controller;
 
   @override
+  State<ReportDetailScreen> createState() => _ReportDetailScreenState();
+}
+
+// TODO: subscriptions.
+class _ReportDetailScreenState extends State<ReportDetailScreen> {
+  // Guard against grandma clicks.
+  late ValueNotifier<bool> _loading;
+  @override
+  initState() {
+    super.initState();
+    _loading = ValueNotifier(false);
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: adaptiveAppBar(title: 'Report: ${report.id}'),
+      appBar: adaptiveAppBar(title: 'Report: ${widget.report.id}'),
       body: ListView(children: [
+        // Subscribe button
+        if (widget.report.verified)
+          ValueListenableBuilder(
+              valueListenable: _loading,
+              builder: (context, loading, child) {
+                return FilledButton(
+                    onPressed: (loading)
+                        ? null
+                        : () {
+                            // TODO: modal drawer with choices for subscription.
+                            // Atm, no validation in place for push/email/etc.
+                          },
+                    child: const Text("Subscribe to updates"));
+              }),
         // Verified
-        (report.verified)
+        (widget.report.verified)
             ? ListTile(
                 leading: const Icon(Icons.verified_user_outlined),
                 title: const Text('Verified'),
@@ -37,7 +65,7 @@ class ReportDetailScreen extends StatelessWidget {
                 tileColor: Theme.of(context).colorScheme.error),
         const Divider(),
         // Progress status
-        switch (report.progress) {
+        switch (widget.report.progress) {
           ProgressStatus.opened => const ListTile(
               leading: Icon(Icons.start_rounded),
               title: Text('Opened'),
@@ -56,7 +84,7 @@ class ReportDetailScreen extends StatelessWidget {
         // Category
         ListTile(
             leading: const Icon(Icons.category),
-            title: Text(toBeginningOfSentenceCase(report.category.name)),
+            title: Text(toBeginningOfSentenceCase(widget.report.category.name)),
             subtitle: const Text('Problem type')),
         const Divider(),
         // Description
@@ -64,124 +92,163 @@ class ReportDetailScreen extends StatelessWidget {
           child: ListTile(
               leading: const Icon(Icons.description_outlined),
               title: const Text('Description'),
-              subtitle: Text(report.description)),
+              subtitle: Text(widget.report.description)),
         ),
         const Divider(),
         // Flag report
-        TextButton(
-            child: const Text('Flag report'),
-            onPressed: () async {
-              if (controller.loggedIn.value) {
-                var flaggedReason = await showConfirmationDialog(
-                  context: context,
-                  title: 'Reason',
-                  actions: FlaggedReason.values
-                      .map((r) => AlertDialogAction(
-                            label: toBeginningOfSentenceCase(r.toString()),
-                            key: r,
-                          ))
-                      .toList(),
-                );
-                if (null == flaggedReason) {
-                  return;
-                }
+        ValueListenableBuilder(
+            valueListenable: _loading,
+            builder: (context, loading, child) {
+              return FilledButton(
+                  onPressed: (loading)
+                      ? null
+                      : () async {
+                          if (widget.controller.loggedIn.value) {
+                            var flaggedReason = await showConfirmationDialog(
+                              context: context,
+                              title: 'Reason',
+                              actions: FlaggedReason.values
+                                  .map((r) => AlertDialogAction(
+                                        label: toBeginningOfSentenceCase(
+                                            r.toString()),
+                                        key: r,
+                                      ))
+                                  .toList(),
+                            );
+                            if (null == flaggedReason) {
+                              _loading.value = false;
+                              return;
+                            }
 
-                // Flag the report
-                await controller
-                    .flagReport(flaggedID: report.id, reason: flaggedReason)
-                    .then((_) async {
-                  if (!context.mounted) {
-                    return;
-                  }
-                  await showOkAlertDialog(
-                      context: context,
-                      title: 'Report flagged',
-                      message: 'Thanks for your help!');
+                            // Flag the report
+                            _loading.value = true;
+                            await widget.controller
+                                .flagReport(
+                                    flaggedID: widget.report.id,
+                                    reason: flaggedReason)
+                                .then((_) async {
+                              if (!context.mounted) {
+                                return;
+                              }
+                              await showOkAlertDialog(
+                                  context: context,
+                                  title: 'Report flagged',
+                                  message: 'Thanks for your help!');
 
-                  if (!context.mounted) {
-                    return;
-                  }
-                  Navigator.pop(context);
-                }, onError: (e, s) {
-                  WidgetsBinding.instance.addPostFrameCallback((_) {
-                    if (!context.mounted) {
-                      return;
-                    }
-                    const errorBar =
-                        SnackBar(content: Text('Sorry, an error occurred'));
-                    ScaffoldMessenger.of(context)
-                      ..clearSnackBars()
-                      ..showSnackBar(errorBar);
-                  });
-                });
-              } else {
-                // Show an alert dialog that pops.
-                // Future feature: push to sign-in screen
-                await showOkAlertDialog(
-                    context: context,
-                    title: 'Authentication required',
-                    message: 'You must be signed in to flag reports');
-              }
+                              if (!context.mounted) {
+                                return;
+                              }
+                              Navigator.pop(context);
+                              await Future.delayed(
+                                      const Duration(milliseconds: 200))
+                                  .then((_) {
+                                if (context.mounted) {
+                                  _loading.value = false;
+                                }
+                              });
+                            }, onError: (e, s) {
+                              _loading.value = false;
+                              WidgetsBinding.instance.addPostFrameCallback((_) {
+                                if (!context.mounted) {
+                                  return;
+                                }
+                                const errorBar = SnackBar(
+                                    content: Text('Sorry, an error occurred'));
+                                ScaffoldMessenger.of(context)
+                                  ..clearSnackBars()
+                                  ..showSnackBar(errorBar);
+                              });
+                            });
+                          } else {
+                            // Show an alert dialog that pops.
+                            // Future feature: push to sign-in screen
+                            await showOkAlertDialog(
+                                context: context,
+                                title: 'Authentication required',
+                                message:
+                                    'You must be signed in to flag reports');
+                          }
+                        },
+                  child: const Text('Flag report'));
             }),
         const Padding(padding: EdgeInsets.symmetric(vertical: 8.0)),
         // Mark duplicate
-        TextButton(
-            child: const Text('Tag duplicate'),
-            onPressed: () async {
-              if (controller.loggedIn.value) {
-                var apple = Platform.isMacOS || Platform.isIOS;
-                // Push to the duplicates picker.
-                var matchID = await Navigator.push(
-                    context,
-                    (apple)
-                        ? CupertinoPageRoute(
-                            builder: (context) =>
-                                DuplicatesScreen(controller: controller))
-                        : MaterialPageRoute(
-                            builder: (context) =>
-                                DuplicatesScreen(controller: controller)));
+        ValueListenableBuilder(
+            valueListenable: _loading,
+            builder: (context, loading, child) {
+              return FilledButton.tonal(
+                  onPressed: (loading)
+                      ? null
+                      : () async {
+                          if (widget.controller.loggedIn.value) {
+                            var apple = Platform.isMacOS || Platform.isIOS;
+                            // Push to the duplicates picker.
+                            var matchID = await Navigator.push(
+                                context,
+                                (apple)
+                                    ? CupertinoPageRoute(
+                                        builder: (context) => DuplicatesScreen(
+                                            controller: widget.controller))
+                                    : MaterialPageRoute(
+                                        builder: (context) => DuplicatesScreen(
+                                            controller: widget.controller)));
 
-                if (null == matchID) {
-                  return;
-                }
+                            if (null == matchID) {
+                              _loading.value = false;
+                              return;
+                            }
 
-                // Flag the duplicate.
-                await controller
-                    .reportDuplicate(
-                        suspectedDupID: report.id, matchID: matchID)
-                    .then((_) async {
-                  if (!context.mounted) {
-                    return;
-                  }
-                  await showOkAlertDialog(
-                      context: context,
-                      title: 'Duplicate flagged',
-                      message: 'Thanks for your help!');
+                            // Flag the duplicate.
+                            _loading.value = true;
+                            await widget.controller
+                                .reportDuplicate(
+                                    suspectedDupID: widget.report.id,
+                                    matchID: matchID)
+                                .then((_) async {
+                              if (!context.mounted) {
+                                return;
+                              }
+                              await showOkAlertDialog(
+                                  context: context,
+                                  title: 'Duplicate flagged',
+                                  message: 'Thanks for your help!');
 
-                  if (!context.mounted) {
-                    return;
-                  }
-                  Navigator.pop(context);
-                }, onError: (e, s) {
-                  WidgetsBinding.instance.addPostFrameCallback((_) {
-                    if (!context.mounted) {
-                      return;
-                    }
-                    const errorBar =
-                        SnackBar(content: Text('Sorry, an error occurred'));
-                    ScaffoldMessenger.of(context)
-                      ..clearSnackBars()
-                      ..showSnackBar(errorBar);
-                  });
-                });
-              } else {
-                // Show an alert dialog that pops.
-                // Future feature: push to sign-in screen
-                await showOkAlertDialog(
-                    context: context,
-                    title: 'Authentication required',
-                    message: 'You must be signed in to flag reports');
-              }
+                              if (!context.mounted) {
+                                return;
+                              }
+
+                              Navigator.pop(context);
+                              await Future.delayed(
+                                      const Duration(milliseconds: 200))
+                                  .then((_) {
+                                if (context.mounted) {
+                                  _loading.value = true;
+                                }
+                              });
+                            }, onError: (e, s) {
+                              _loading.value = false;
+                              WidgetsBinding.instance.addPostFrameCallback((_) {
+                                if (!context.mounted) {
+                                  return;
+                                }
+                                const errorBar = SnackBar(
+                                    content: Text('Sorry, an error occurred'));
+                                ScaffoldMessenger.of(context)
+                                  ..clearSnackBars()
+                                  ..showSnackBar(errorBar);
+                              });
+                            });
+                          } else {
+                            // Show an alert dialog that pops.
+                            // Future feature: push to sign-in screen
+                            await showOkAlertDialog(
+                                context: context,
+                                title: 'Authentication required',
+                                message:
+                                    'You must be signed in to flag reports');
+                          }
+                        },
+                  child: const Text('Tag duplicate'));
             })
       ]),
     );

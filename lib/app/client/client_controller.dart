@@ -240,6 +240,7 @@ class ClientController {
     }
   }
 
+  // TODO: if time to clean up, these should just throw if the user doesn't log in/sign up, change the interface.
   /// To authenticate users who want to read a report.
   /// Throws Exceptions on failure to retrieve user data.
   Future<bool> logIn({required String email, required String password}) async {
