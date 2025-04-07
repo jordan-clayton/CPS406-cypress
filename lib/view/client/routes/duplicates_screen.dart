@@ -18,6 +18,7 @@ class DuplicatesScreen extends StatefulWidget {
 class _DuplicatesScreenState extends State<DuplicatesScreen> {
   late Future<List<Report>> _loadReports;
   int? _selectedReport;
+
   // For guarding against grandma clicks.
   late ValueNotifier<bool> _loading;
 
@@ -35,19 +36,23 @@ class _DuplicatesScreenState extends State<DuplicatesScreen> {
       });
 
   void onLocationPicked(int id) {
-    if (mounted) {
-      setState(() {
-        _selectedReport = id;
-      });
+    if (!mounted) {
+      return;
     }
+
+    setState(() {
+      _selectedReport = id;
+    });
   }
 
   void onDismiss() {
-    if (mounted) {
-      setState(() {
-        _selectedReport = null;
-      });
+    if (!mounted) {
+      return;
     }
+
+    setState(() {
+      _selectedReport = null;
+    });
   }
 
   @override
@@ -95,13 +100,15 @@ class _DuplicatesScreenState extends State<DuplicatesScreen> {
                                 ? null
                                 : () async {
                                     _loading.value = true;
-                                    Navigator.pop(context);
+                                    Navigator.pop(this.context);
                                     await Future.delayed(
                                             const Duration(milliseconds: 200))
                                         .then((_) {
-                                      if (context.mounted) {
-                                        _loading.value = false;
+                                      if (!mounted) {
+                                        return;
                                       }
+
+                                      _loading.value = false;
                                     });
                                   }),
                       );
@@ -118,13 +125,14 @@ class _DuplicatesScreenState extends State<DuplicatesScreen> {
                       ? null
                       : () async {
                           _loading.value = true;
-                          Navigator.pop(context, _selectedReport);
+                          Navigator.pop(this.context, _selectedReport);
                           await Future.delayed(
                                   const Duration(milliseconds: 200))
                               .then((_) {
-                            if (context.mounted) {
-                              _loading.value = false;
+                            if (!mounted) {
+                              return;
                             }
+                            _loading.value = false;
                           });
                         },
                   child: (loading)

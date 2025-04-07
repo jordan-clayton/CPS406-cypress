@@ -1,11 +1,10 @@
-import '../../models/report.dart';
 import 'constants.dart' as constants;
 import 'utils.dart';
 
-bool insideToronto(Report r1) =>
+bool insideToronto(num lat, num long) =>
     calculateSphericalDistance(
-        lat1: r1.latitude,
-        long1: r1.longitude,
+        lat1: lat,
+        long1: long,
         lat2: constants.torontoLat,
         long2: constants.torontoLong) <=
     constants.torontoRadius;

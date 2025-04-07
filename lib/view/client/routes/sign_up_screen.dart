@@ -145,40 +145,45 @@ class _SignUpScreenState extends State<SignUpScreen> {
                               phone: _phone)
                           .then((signedUp) async {
                         if (signedUp) {
-                          if (!context.mounted) {
+                          if (!mounted) {
                             return;
                           }
 
-                          Navigator.pop(context);
+                          Navigator.pop(this.context);
                           await Future.delayed(
                                   const Duration(milliseconds: 200))
                               .then((_) {
-                            if (mounted) {
-                              _loading.value = false;
+                            if (!mounted) {
+                              return;
                             }
+                            _loading.value = false;
                           });
                         } else {
                           _loading.value = false;
                           WidgetsBinding.instance.addPostFrameCallback((_) {
-                            if (mounted) {
-                              const errorBar = SnackBar(
-                                  content: Text('Sign up unsuccessful'));
-                              ScaffoldMessenger.of(context)
-                                ..clearSnackBars()
-                                ..showSnackBar(errorBar);
+                            if (!mounted) {
+                              return;
                             }
+
+                            const errorBar =
+                                SnackBar(content: Text('Sign up unsuccessful'));
+                            ScaffoldMessenger.of(this.context)
+                              ..clearSnackBars()
+                              ..showSnackBar(errorBar);
                           });
                         }
                       }, onError: (e, s) {
                         _loading.value = false;
                         WidgetsBinding.instance.addPostFrameCallback((_) {
-                          if (mounted) {
-                            const errorBar =
-                                SnackBar(content: Text('Error signing up'));
-                            ScaffoldMessenger.of(context)
-                              ..clearSnackBars()
-                              ..showSnackBar(errorBar);
+                          if (!mounted) {
+                            return;
                           }
+
+                          const errorBar =
+                              SnackBar(content: Text('Error signing up'));
+                          ScaffoldMessenger.of(this.context)
+                            ..clearSnackBars()
+                            ..showSnackBar(errorBar);
                         });
                       });
                     },

@@ -33,7 +33,7 @@ enum ProgressStatus {
 }
 
 class Report extends Equatable implements Comparable<Report> {
-  // This is unique and autoincrements.
+  // This is unique and autoincrements in the db.
   final int id;
   final ProblemCategory category;
   final num latitude;

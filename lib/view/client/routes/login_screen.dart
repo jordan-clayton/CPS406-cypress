@@ -150,9 +150,10 @@ class _LoginFormScreenState extends State<LoginScreen> {
                               await Future.delayed(
                                       const Duration(milliseconds: 200))
                                   .then((_) {
-                                if (context.mounted) {
-                                  _loading.value = false;
+                                if (!mounted) {
+                                  return;
                                 }
+                                _loading.value = false;
                               });
                             } else {
                               // Either an invalid email or password.
@@ -165,13 +166,14 @@ class _LoginFormScreenState extends State<LoginScreen> {
                           }, onError: (e, s) {
                             _loading.value = false;
                             WidgetsBinding.instance.addPostFrameCallback((_) {
-                              if (mounted) {
-                                const errorBar =
-                                    SnackBar(content: Text('Error logging in'));
-                                ScaffoldMessenger.of(context)
-                                  ..clearSnackBars()
-                                  ..showSnackBar(errorBar);
+                              if (!mounted) {
+                                return;
                               }
+                              const errorBar =
+                                  SnackBar(content: Text('Error logging in'));
+                              ScaffoldMessenger.of(this.context)
+                                ..clearSnackBars()
+                                ..showSnackBar(errorBar);
                             });
                           });
                         },
@@ -197,9 +199,11 @@ class _LoginFormScreenState extends State<LoginScreen> {
                                           builder: (context) => SignUpScreen(
                                               controller: widget.controller)))
                               .then((_) {
-                            if (context.mounted) {
-                              _loading.value = false;
+                            if (!mounted) {
+                              return;
                             }
+
+                            _loading.value = false;
                           });
                         },
                   child: const Text('Sign up'));

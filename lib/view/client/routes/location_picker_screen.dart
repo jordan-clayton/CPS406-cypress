@@ -61,13 +61,15 @@ class _LocationPickerState extends State<LocationPicker> {
                         ? null
                         : () async {
                             _loading.value = true;
-                            Navigator.pop(context, null);
+                            Navigator.pop(this.context, null);
                             await Future.delayed(
                                     const Duration(milliseconds: 200))
                                 .then((_) {
-                              if (context.mounted) {
-                                _loading.value = false;
+                              if (!mounted) {
+                                return;
                               }
+
+                              _loading.value = false;
                             });
                           }),
               );
@@ -82,13 +84,14 @@ class _LocationPickerState extends State<LocationPicker> {
                         ? null
                         : () async {
                             _loading.value = true;
-                            Navigator.pop(context, _selectedLocation);
+                            Navigator.pop(this.context, _selectedLocation);
                             await Future.delayed(
                                     const Duration(milliseconds: 200))
                                 .then((_) {
-                              if (context.mounted) {
-                                _loading.value = false;
+                              if (!mounted) {
+                                return;
                               }
+                              _loading.value = false;
                             });
                           },
                     child: (loading)

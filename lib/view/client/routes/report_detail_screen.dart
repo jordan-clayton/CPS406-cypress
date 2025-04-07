@@ -26,6 +26,7 @@ class ReportDetailScreen extends StatefulWidget {
 class _ReportDetailScreenState extends State<ReportDetailScreen> {
   // Guard against grandma clicks.
   late ValueNotifier<bool> _loading;
+
   @override
   initState() {
     super.initState();
@@ -127,34 +128,36 @@ class _ReportDetailScreenState extends State<ReportDetailScreen> {
                                     flaggedID: widget.report.id,
                                     reason: flaggedReason)
                                 .then((_) async {
-                              if (!context.mounted) {
+                              if (!mounted) {
                                 return;
                               }
                               await showOkAlertDialog(
-                                  context: context,
+                                  context: this.context,
                                   title: 'Report flagged',
                                   message: 'Thanks for your help!');
 
-                              if (!context.mounted) {
+                              if (!mounted) {
                                 return;
                               }
-                              Navigator.pop(context);
+
+                              Navigator.pop(this.context);
                               await Future.delayed(
                                       const Duration(milliseconds: 200))
                                   .then((_) {
-                                if (context.mounted) {
-                                  _loading.value = false;
+                                if (!mounted) {
+                                  return;
                                 }
+                                _loading.value = false;
                               });
                             }, onError: (e, s) {
                               _loading.value = false;
                               WidgetsBinding.instance.addPostFrameCallback((_) {
-                                if (!context.mounted) {
+                                if (!mounted) {
                                   return;
                                 }
                                 const errorBar = SnackBar(
                                     content: Text('Sorry, an error occurred'));
-                                ScaffoldMessenger.of(context)
+                                ScaffoldMessenger.of(this.context)
                                   ..clearSnackBars()
                                   ..showSnackBar(errorBar);
                               });
@@ -205,35 +208,36 @@ class _ReportDetailScreenState extends State<ReportDetailScreen> {
                                     suspectedDupID: widget.report.id,
                                     matchID: matchID)
                                 .then((_) async {
-                              if (!context.mounted) {
+                              if (!mounted) {
                                 return;
                               }
                               await showOkAlertDialog(
-                                  context: context,
+                                  context: this.context,
                                   title: 'Duplicate flagged',
                                   message: 'Thanks for your help!');
 
-                              if (!context.mounted) {
+                              if (!mounted) {
                                 return;
                               }
 
-                              Navigator.pop(context);
+                              Navigator.pop(this.context);
                               await Future.delayed(
                                       const Duration(milliseconds: 200))
                                   .then((_) {
-                                if (context.mounted) {
-                                  _loading.value = true;
+                                if (!mounted) {
+                                  return;
                                 }
+                                _loading.value = false;
                               });
                             }, onError: (e, s) {
                               _loading.value = false;
                               WidgetsBinding.instance.addPostFrameCallback((_) {
-                                if (!context.mounted) {
+                                if (!mounted) {
                                   return;
                                 }
                                 const errorBar = SnackBar(
                                     content: Text('Sorry, an error occurred'));
-                                ScaffoldMessenger.of(context)
+                                ScaffoldMessenger.of(this.context)
                                   ..clearSnackBars()
                                   ..showSnackBar(errorBar);
                               });

@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:adaptive_dialog/adaptive_dialog.dart';
 import 'package:cypress/view/client/routes/report_form_screen.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -25,64 +26,128 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  // TODO: _loading guard against grandma clicks.
+  late ValueNotifier<bool> _loading;
+
+  @override
+  initState() {
+    super.initState();
+    _loading = ValueNotifier(false);
+  }
+
   @override
   Widget build(BuildContext context) {
     bool apple = Platform.isMacOS || Platform.isIOS;
     return PopScope(
       canPop: false,
-      child: Scaffold(
-        // TODO: finish drawer.
-        // The navigation drawer should allow navigation to the login screen/sign up screen.
-        drawer: Drawer(),
-        body: Stack(children: [
-          const FloatingMenuButton(),
-          ReportViewerMap(
-              controller: widget.controller,
-              handleError: () {
-                WidgetsBinding.instance.addPostFrameCallback((_) {
-                  var errorBar = SnackBar(
-                    content: const Text('Error retrieving new reports.'),
-                    action: SnackBarAction(
-                        label: 'Retry?', onPressed: () => setState(() {})),
-                  );
-                  ScaffoldMessenger.of(context).showSnackBar(errorBar);
-                });
-              }),
-        ]),
-        floatingActionButton: ValueListenableBuilder(
-            valueListenable: widget.controller.loggedIn,
-            builder: (context, loggedIn, child) {
-              return FloatingActionButton(
-                  child: (loggedIn)
-                      ? const Icon(Icons.report_problem_outlined)
-                      : const Icon(Icons.login_rounded),
-                  onPressed: () async {
-                    if (loggedIn) {
-                      // Route to Report filing page
-                      await Navigator.push(
-                          context,
-                          (apple)
-                              ? CupertinoPageRoute(
-                                  builder: (context) => ReportFormScreen(
-                                      controller: widget.controller))
-                              : MaterialPageRoute(
-                                  builder: (context) => ReportFormScreen(
-                                      controller: widget.controller)));
-                    } else {
-                      await Navigator.push(
-                          context,
-                          (apple)
-                              ? CupertinoPageRoute(
-                                  builder: (context) => LoginScreen(
-                                      controller: widget.controller))
-                              : MaterialPageRoute(
-                                  builder: (context) => LoginScreen(
-                                      controller: widget.controller)));
-                    }
-                  });
-            }),
-      ),
+      child: ValueListenableBuilder(
+          valueListenable: widget.controller.loggedIn,
+          builder: (context, loggedIn, child) {
+            return Scaffold(
+              drawer: Drawer(
+                child: ListView(children: [
+                  const DrawerHeader(
+                    child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [Text('Cypress')]),
+                  ),
+                  (loggedIn)
+                      ? ListTile(
+                          title: const Text('User Settings'),
+                          onTap: () async {
+                            // Pop the drawer.
+                            Navigator.pop(context);
+                            await showOkAlertDialog(
+                                context: this.context,
+                                title: 'Coming Soon',
+                                message: 'Feature not yet implemented');
+                          })
+                      : ListTile(
+                          title: const Text('Log In'),
+                          onTap: () async {
+                            // Pop the drawer and route to the login page
+                            Navigator.pop(context);
+                            _loading.value = true;
+                            Navigator.push(
+                                this.context,
+                                (apple)
+                                    ? CupertinoPageRoute(
+                                        builder: (context) => LoginScreen(
+                                            controller: widget.controller))
+                                    : MaterialPageRoute(
+                                        builder: (context) => LoginScreen(
+                                            controller: widget.controller)));
+                          })
+                ]),
+              ),
+              body: Stack(children: [
+                const FloatingMenuButton(),
+                ReportViewerMap(
+                    controller: widget.controller,
+                    handleError: () {
+                      WidgetsBinding.instance.addPostFrameCallback((_) {
+                        var errorBar = SnackBar(
+                          content: const Text('Error retrieving new reports.'),
+                          action: SnackBarAction(
+                              label: 'Retry?',
+                              onPressed: () => setState(() {})),
+                        );
+                        ScaffoldMessenger.of(this.context)
+                            .showSnackBar(errorBar);
+                      });
+                    }),
+              ]),
+              floatingActionButton: ValueListenableBuilder(
+                  valueListenable: _loading,
+                  builder: (context, loading, child) {
+                    return FloatingActionButton(
+                        onPressed: (loading)
+                            ? null
+                            : () async {
+                                if (loggedIn) {
+                                  // Route to Report filing page
+                                  _loading.value = true;
+                                  await Navigator.push(
+                                      this.context,
+                                      (apple)
+                                          ? CupertinoPageRoute(
+                                              builder: (context) =>
+                                                  ReportFormScreen(
+                                                      controller:
+                                                          widget.controller))
+                                          : MaterialPageRoute(
+                                              builder: (context) =>
+                                                  ReportFormScreen(
+                                                      controller:
+                                                          widget.controller)));
+                                  await Future.delayed(
+                                          const Duration(milliseconds: 200))
+                                      .then((_) => _loading.value = false);
+                                } else {
+                                  _loading.value = true;
+                                  await Navigator.push(
+                                      this.context,
+                                      (apple)
+                                          ? CupertinoPageRoute(
+                                              builder: (context) => LoginScreen(
+                                                  controller:
+                                                      widget.controller))
+                                          : MaterialPageRoute(
+                                              builder: (context) => LoginScreen(
+                                                  controller:
+                                                      widget.controller)));
+                                  await Future.delayed(
+                                          const Duration(milliseconds: 200))
+                                      .then((_) => _loading.value = false);
+                                }
+                              },
+                        child: (loading)
+                            ? const CircularProgressIndicator.adaptive()
+                            : (loggedIn)
+                                ? const Icon(Icons.report_problem_outlined)
+                                : const Icon(Icons.login_rounded));
+                  }),
+            );
+          }),
     );
   }
 }
