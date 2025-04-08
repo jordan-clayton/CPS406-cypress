@@ -1,9 +1,8 @@
-import 'dart:io';
-
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/semantics.dart';
 import 'package:intl/intl.dart' as intl;
+import 'package:os_detect/os_detect.dart' as os_detect;
 
 import '../../../app/common/validation.dart';
 import '../../../models/subscription.dart';
@@ -120,7 +119,7 @@ class _SubscriptionInfoPickerScreen
   Widget build(BuildContext context) {
     final canSubmit =
         (null != _notificationMethod && (_contactInfo ?? '').isNotEmpty);
-    final apple = Platform.isMacOS || Platform.isIOS;
+    final apple = os_detect.isMacOS || os_detect.isIOS;
     return Scaffold(
       appBar: adaptiveAppBar(title: 'Subscription'),
       body: ListView(children: [

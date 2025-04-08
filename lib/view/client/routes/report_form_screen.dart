@@ -1,11 +1,10 @@
-import 'dart:io';
-
 import 'package:adaptive_dialog/adaptive_dialog.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/semantics.dart';
 import 'package:intl/intl.dart' as intl;
 import 'package:latlong2/latlong.dart';
+import 'package:os_detect/os_detect.dart' as os_detect;
 
 import '../../../app/client/client_controller.dart';
 import '../../../app/common/validation.dart';
@@ -62,7 +61,7 @@ class _ReportFormScreenState extends State<ReportFormScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final apple = Platform.isMacOS || Platform.isIOS;
+    final apple = os_detect.isMacOS || os_detect.isIOS;
     final canSubmit = _description.isNotEmpty && null != _category;
     return ValueListenableBuilder(
         valueListenable: _loading,

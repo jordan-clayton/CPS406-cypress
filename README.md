@@ -17,6 +17,7 @@ A real-time issue reporting and tracking system for the City of Toronto
 - Linux
 - Android
 - iOS
+- Web
 
 ## Features
 
@@ -40,9 +41,6 @@ A real-time issue reporting and tracking system for the City of Toronto
 ## Building
 ### Dependencies:
 - [Flutter](https://docs.flutter.dev/get-started/install) 
-
-**NOTE: presently the application does not support Flutter Web. Do not try to build for for flutter
-web.**
 
 First, grab dependencies with:
 

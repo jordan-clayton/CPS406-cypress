@@ -47,6 +47,16 @@ class ClientController {
   }
 
   LatLng get clientLocation => _locationService.getLocation();
+  void addLocationListener(
+      {required String owner,
+      required void Function(bool) onPermissionChanged}) {
+    _locationService.addLocationListener(
+        owner: owner, onPermissionChanged: onPermissionChanged);
+  }
+
+  void removeLocationListener({required String owner}) {
+    _locationService.removeLocationListener(owner: owner);
+  }
 
   // For constant references to the user.
   // Our User object is currently mutable; this might change depending on

@@ -1,8 +1,7 @@
-import 'dart:io';
-
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/semantics.dart';
+import 'package:os_detect/os_detect.dart' as os_detect;
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../app/client/client_controller.dart';
@@ -87,7 +86,7 @@ class _LoginFormScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final apple = Platform.isMacOS || Platform.isIOS;
+    final apple = os_detect.isMacOS || os_detect.isIOS;
     return Scaffold(
       appBar: adaptiveAppBar(title: 'Log In'),
       body: ListView(children: [

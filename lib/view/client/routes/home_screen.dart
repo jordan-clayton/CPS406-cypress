@@ -1,9 +1,9 @@
 import 'dart:async';
-import 'dart:io';
 
 import 'package:adaptive_dialog/adaptive_dialog.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:os_detect/os_detect.dart' as os_detect;
 
 import '../../../app/client/client_controller.dart';
 import '../../common/widgets/floating_menu_button.dart';
@@ -94,7 +94,8 @@ class _HomeScreenState extends State<HomeScreen>
   }
 
   void _resetQueryTimer() {
-    _queryTimer = Timer.periodic(const Duration(seconds: 1), (_) {
+    // TODO: pick an appropriate refresh rate.
+    _queryTimer = Timer.periodic(const Duration(seconds: 5), (_) {
       if (!mounted) {
         return;
       }
@@ -107,7 +108,7 @@ class _HomeScreenState extends State<HomeScreen>
 
   @override
   Widget build(BuildContext context) {
-    final apple = Platform.isMacOS || Platform.isIOS;
+    final apple = os_detect.isMacOS || os_detect.isIOS;
     return PopScope(
       canPop: false,
       onPopInvokedWithResult: (pop, result) {},

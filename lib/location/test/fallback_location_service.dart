@@ -11,4 +11,16 @@ class FallbackLocationService implements LocationService {
 
   @override
   void close() {}
+
+  @override
+  bool get hasPermission => false;
+
+  // These are NOPs; there's no location to listen to.
+  @override
+  void addLocationListener(
+      {required String owner,
+      required void Function(bool p1) onPermissionChanged}) {}
+
+  @override
+  void removeLocationListener({required String owner}) {}
 }

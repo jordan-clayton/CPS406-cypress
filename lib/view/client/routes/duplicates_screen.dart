@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:latlong2/latlong.dart';
 
 import '../../../app/client/client_controller.dart';
 import '../../../models/report.dart';
@@ -91,7 +92,10 @@ class _DuplicatesPickerScreenState extends State<DuplicatesPickerScreen> {
                         // Filter out the suspected report.
                         reports.where((r) => r != widget.suspectedDup).toList(),
                     selectedID: _selectedReport,
-                    initialLocation: widget.controller.clientLocation,
+                    // Set the initial location to around where the suspected duplicate report is.
+                    initialLocation: LatLng(
+                        widget.suspectedDup.latitude.toDouble(),
+                        widget.suspectedDup.longitude.toDouble()),
                     onLocationPicked: onLocationPicked,
                     onDismiss: onDismiss),
                 if (!done)

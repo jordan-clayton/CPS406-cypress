@@ -1,10 +1,10 @@
 import 'dart:async';
-import 'dart:io';
 
 import 'package:adaptive_dialog/adaptive_dialog.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:os_detect/os_detect.dart' as os_detect;
 
 import '../../../app/client/client_controller.dart';
 import '../../../models/flagged.dart';
@@ -38,7 +38,7 @@ class _ReportDetailScreenState extends State<ReportDetailScreen>
 
   @override
   Widget build(BuildContext context) {
-    final apple = Platform.isMacOS || Platform.isIOS;
+    final apple = os_detect.isMacOS || os_detect.isIOS;
     return Scaffold(
       appBar: adaptiveAppBar(title: 'Report: ${widget.report.id}'),
       body: ListView(children: [
