@@ -311,18 +311,24 @@ class ClientController {
         if (null == _user || _loginService.userID != _user?.id) {
           await _getUserData();
         }
+        log('Login successful');
         return true;
       }
 
       if (await _loginService.logIn(email: email, password: password)) {
         loggedIn.value = true;
         await _getUserData();
+        log('Login successful');
         return true;
       }
 
+      log('Login unsuccessful');
       return false;
     } on Exception catch (e, s) {
       _logError(exception: e, stacktrace: s);
+      return Future.error(e, s);
+    } catch (e, s) {
+      log(e.toString(), stackTrace: s);
       return Future.error(e, s);
     }
   }
@@ -349,12 +355,29 @@ class ClientController {
         _user!.phone = phone ?? _user!.phone;
 
         // TODO: fix this -> Not sure if supabase authentication requires validation before logging in/sending data.
+        final userEntity = _user!.toEntity();
+        // Add the newly created user ID to the record here to prevent violating FK constraints before insert.
+        userEntity['id'] = _user!.id;
         await _databaseService.createEntry(
           table: 'profiles',
           entry: _user!.toEntity(),
         );
       }
       return null != newUserID;
+    } on Exception catch (e, s) {
+      _user = null;
+      _logError(exception: e, stacktrace: s);
+      return Future.error(e, s);
+    }
+  }
+
+  /// Signs out a user.
+  Future<void> signOut() async {
+    log('Signing out.');
+    try {
+      await _loginService.signOut();
+      _user = null;
+      loggedIn.value = false;
     } on Exception catch (e, s) {
       _logError(exception: e, stacktrace: s);
       return Future.error(e, s);

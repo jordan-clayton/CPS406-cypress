@@ -122,7 +122,11 @@ class PostgrestDatabaseQuery implements DatabaseQuery {
     if (null == response) {
       return [];
     }
-    return [...response];
+    if (response is List) {
+      return [...response];
+    }
+
+    return [response];
   }
 
   // TODO: decide whether or not to silently apply or throw an exception.

@@ -154,7 +154,43 @@ class _HomeScreenState extends State<HomeScreen>
                               }
                               _loading.value = false;
                             });
-                          })
+                          }),
+                  if (loggedIn)
+                    ListTile(
+                        title: const Text('Sign Out'),
+                        onTap: () async {
+                          // Pop the drawer
+                          Navigator.pop(context);
+
+                          // Sign out.
+                          _loading.value = true;
+                          await widget.controller.signOut().then((_) {
+                            _loading.value = false;
+                            WidgetsBinding.instance.addPostFrameCallback((_) {
+                              if (!mounted) {
+                                return;
+                              }
+                              const successBar = SnackBar(
+                                  content: Text('Successfully logged out.'));
+                              ScaffoldMessenger.of(this.context)
+                                ..clearSnackBars()
+                                ..showSnackBar(successBar);
+                            });
+                          }, onError: (e, s) {
+                            _loading.value = false;
+                            WidgetsBinding.instance.addPostFrameCallback((_) {
+                              if (!mounted) {
+                                return;
+                              }
+                              const errorBar = SnackBar(
+                                  content: Text('Sorry! Error signing out.'));
+
+                              ScaffoldMessenger.of(this.context)
+                                ..clearSnackBars()
+                                ..showSnackBar(errorBar);
+                            });
+                          });
+                        }),
                 ]),
               ),
               body: Stack(children: [

@@ -65,4 +65,9 @@ class SupabaseLoginService implements LoginService {
         await _cursor.auth.signUp(password: password, email: email);
     return response.user?.id;
   }
+
+  @override
+  Future<void> signOut() async {
+    return await _cursor.auth.signOut();
+  }
 }

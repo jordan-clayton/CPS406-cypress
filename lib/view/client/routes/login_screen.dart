@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/semantics.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../app/client/client_controller.dart';
 import '../../../app/common/validation.dart';
@@ -188,8 +189,18 @@ class _LoginFormScreenState extends State<LoginScreen> {
                               if (!mounted) {
                                 return;
                               }
+                              if (e is AuthException &&
+                                  e.code == 'invalid_credentials') {
+                                if (mounted) {
+                                  setState(() {
+                                    _errorEmail = 'Failed to find account';
+                                    _errorPassword =
+                                        'Invalid email or password';
+                                  });
+                                }
+                              }
                               const errorBar =
-                                  SnackBar(content: Text('Error logging in'));
+                                  SnackBar(content: Text('Error logging in.'));
                               ScaffoldMessenger.of(this.context)
                                 ..clearSnackBars()
                                 ..showSnackBar(errorBar);

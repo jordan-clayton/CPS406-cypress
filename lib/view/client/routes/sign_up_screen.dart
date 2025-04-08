@@ -7,6 +7,7 @@ import 'package:flutter/semantics.dart';
 import '../../../app/client/client_controller.dart';
 import '../../../app/common/validation.dart';
 import '../../common/widgets/adaptive_appbar.dart';
+import 'login_screen.dart';
 
 class SignUpScreen extends StatefulWidget {
   const SignUpScreen({super.key, required this.controller});
@@ -187,8 +188,16 @@ class _SignUpScreenState extends State<SignUpScreen> {
                           if (!mounted) {
                             return;
                           }
-
-                          Navigator.pop(this.context);
+                          // Re-route the user to the login screen
+                          Navigator.pushReplacement(
+                              this.context,
+                              (apple)
+                                  ? CupertinoPageRoute(
+                                      builder: (context) => LoginScreen(
+                                          controller: widget.controller))
+                                  : MaterialPageRoute(
+                                      builder: (context) => LoginScreen(
+                                          controller: widget.controller)));
                           await Future.delayed(
                                   const Duration(milliseconds: 200))
                               .then((_) {

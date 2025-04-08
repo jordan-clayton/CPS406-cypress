@@ -27,8 +27,9 @@ class User extends Equatable implements Comparable<User> {
       phone: entity['phone']);
 
   Map<String, dynamic> toEntity() => {
+        'id': id,
         'username': username,
-        'fcmToken': fcmToken ?? '',
+        'fcm_token': fcmToken ?? '',
         'email': email ?? '',
         'phone': phone ?? '',
       };
