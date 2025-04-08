@@ -135,16 +135,27 @@ class _LoginFormScreenState extends State<LoginScreen> {
                   onPressed: (loggingIn || _email.isEmpty || _password.isEmpty)
                       ? null
                       : () async {
-                          _loading.value = true;
                           // Validate email
                           if (!validEmail(_email)) {
-                            setState(() {
-                              _errorEmail = 'Invalid email format';
-                              _loading.value = false;
-                            });
+                            if (mounted) {
+                              setState(() {
+                                _errorEmail = 'Invalid email format';
+                              });
+                            }
                             return;
                           }
-                          // Validate password if needed.
+
+                          // Validate password
+                          if (_password.length < 6) {
+                            if (mounted) {
+                              setState(() {
+                                _errorPassword =
+                                    'Password must be more than 6 characters.';
+                              });
+                            }
+                          }
+
+                          _loading.value = true;
                           // Log in
                           await widget.controller
                               .logIn(email: _email, password: _password)

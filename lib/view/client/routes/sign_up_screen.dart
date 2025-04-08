@@ -26,8 +26,9 @@ class _SignUpScreenState extends State<SignUpScreen> {
 
   late String _email;
   late String _password;
-  String? _phoneError;
-  String? _emailError;
+  String? _errorPhone;
+  String? _errorEmail;
+  String? _errorPassword;
   String? _username;
   String? _phone;
 
@@ -73,7 +74,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
     }
     setState(() {
       _email = _emailController.text;
-      _emailError = null;
+      _errorEmail = null;
     });
   }
 
@@ -96,7 +97,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
     }
     setState(() {
       _phone = _phoneController.text;
-      _phoneError = null;
+      _errorPhone = null;
     });
   }
 
@@ -108,6 +109,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
     }
     setState(() {
       _password = _passwordController.text;
+      _errorPassword = null;
     });
   }
 
@@ -140,17 +142,32 @@ class _SignUpScreenState extends State<SignUpScreen> {
                   : () async {
                       // Validate
                       if (!validEmail(_email)) {
-                        setState(() {
-                          _emailError = 'Invalid email format';
-                        });
+                        if (mounted) {
+                          setState(() {
+                            _errorEmail = 'Invalid email format';
+                          });
+                        }
                         return;
                       }
                       if (null != _phone && !validPhone(_phone!)) {
-                        setState(() {
-                          _phoneError = 'Invalid phone number';
-                        });
+                        if (mounted) {
+                          setState(() {
+                            _errorPhone = 'Invalid phone number';
+                          });
+                        }
                         return;
                       }
+
+                      if (_password.length < 6) {
+                        if (mounted) {
+                          setState(() {
+                            _errorPassword =
+                                'Password length must be at least 6 character.';
+                          });
+                        }
+                        return;
+                      }
+
                       // Assume username is correct and push the sign-up
                       _loading.value = true;
                       await widget.controller
@@ -220,8 +237,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
           placeholder: 'Phone',
           keyboardType: TextInputType.phone,
         ),
-        if (null != _phoneError)
-          Text(_phoneError!,
+        if (null != _errorPhone)
+          Text(_errorPhone!,
               style: const TextStyle(
                   color: CupertinoColors.systemRed, fontSize: 12)),
         // Required fields
@@ -230,8 +247,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
           controller: _emailController,
           placeholder: 'Email',
         ),
-        if (null != _emailError)
-          Text(_emailError!,
+        if (null != _errorEmail)
+          Text(_errorEmail!,
               style: const TextStyle(
                   color: CupertinoColors.systemRed, fontSize: 12)),
         CupertinoTextField(
@@ -239,6 +256,10 @@ class _SignUpScreenState extends State<SignUpScreen> {
           obscureText: true,
           placeholder: 'Password',
         ),
+        if (null != _errorPassword)
+          Text(_errorPassword!,
+              style: const TextStyle(
+                  color: CupertinoColors.systemRed, fontSize: 12)),
         signUpButton
       ];
     }
@@ -256,21 +277,22 @@ class _SignUpScreenState extends State<SignUpScreen> {
           keyboardType: TextInputType.phone,
           decoration: InputDecoration(
             labelText: 'Phone',
-            errorText: _phoneError,
+            errorText: _errorPhone,
           )),
       requiredHeader,
       TextField(
         controller: _emailController,
         decoration: InputDecoration(
           labelText: 'Email',
-          errorText: _emailError,
+          errorText: _errorEmail,
         ),
       ),
       TextField(
           controller: _passwordController,
           obscureText: true,
-          decoration: const InputDecoration(
+          decoration: InputDecoration(
             labelText: 'Password',
+            errorText: _errorPassword,
           )),
       signUpButton
     ];
