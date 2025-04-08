@@ -29,6 +29,7 @@ class _ClientApplicationState extends State<ClientApplication> {
 
   @override
   Widget build(BuildContext context) {
+    log('Building MaterialApp');
     return MaterialApp(
         title: 'Cypress',
         theme: ThemeData(
@@ -65,6 +66,7 @@ class _ClientApplicationState extends State<ClientApplication> {
                 );
               }
 
+              log('Building HomeScreen');
               return HomeScreen(
                 controller: snapshot.data!,
                 routeObserver: _routeObserver,

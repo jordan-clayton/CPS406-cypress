@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:geolocator/geolocator.dart';
 import 'package:latlong2/latlong.dart';
@@ -27,6 +28,11 @@ class CypressLocationService implements LocationService {
   }
 
   Future<void> _init() async {
+    // NOTE: Geolocator doesn't support linux :<
+    if (Platform.isLinux || Platform.isFuchsia) {
+      return;
+    }
+
     var permission = await Geolocator.checkPermission();
     if (permission == LocationPermission.denied) {
       permission = await Geolocator.requestPermission();

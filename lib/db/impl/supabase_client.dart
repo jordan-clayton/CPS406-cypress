@@ -20,6 +20,9 @@ class SupabaseImpl implements PostgrestDatabaseClient {
       : _cursor = client,
         _initialized = true;
 
+  @override
+  bool get initialized => _initialized;
+
   // We can also swap at runtime.
   // It would be in our interest to make sure the authentication and database
   // are the same client.

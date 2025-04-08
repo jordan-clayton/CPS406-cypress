@@ -62,10 +62,12 @@ class ClientController {
   ///  the required value type
   Future<List<Report>> getCurrentReports() async {
     try {
+      log('Gathering data');
       final data =
           await _databaseService.getEntries(table: 'reports', filters: [
         DatabaseFilter(column: 'progress', operator: 'neq', value: 'closed'),
       ]);
+      log('Data gathered.');
       return data.map((e) => Report.fromEntity(e)).toList(growable: false);
     } on Exception catch (e, s) {
       _logError(exception: e, stacktrace: s);
@@ -81,6 +83,7 @@ class ClientController {
   ///
   /// Throws on a database failure.
   Future<void> updateUser({required User user}) async {
+    log('Updating user.');
     try {
       final entity = user.toEntity();
       entity['id'] = user.id;
@@ -108,6 +111,7 @@ class ClientController {
   /// Throws on database failure.
   /// Subscribes anonymously if the data is incoherent.
   Future<void> subscribe({required SubscriptionDTO info}) async {
+    log('Making subscription.');
     try {
       // If the user isn't authenticated/not signed up, subscribe anonymously.
       if (!loggedIn.value || null == _user) {
@@ -150,6 +154,7 @@ class ClientController {
   /// Throws on database failure.
   /// It is up to the caller to handle the exceptions.
   Future<void> _subscribeAnonymous({required SubscriptionDTO anon}) async {
+    log('Making anon subscription.');
     final anonUser = User(id: 'anonymous');
     switch (anon.notificationMethod) {
       case NotificationMethod.sms:
@@ -188,6 +193,7 @@ class ClientController {
   /// Throws on failure to submit data to the database.
   /// Throws if a user tries to report without registering/login.
   Future<void> makeReport({required Report newReport}) async {
+    log('Making report.');
     if (!loggedIn.value) {
       return Future.error(Exception("User not authenticated."));
     }
@@ -214,6 +220,7 @@ class ClientController {
   /// Throws on database failure, invalid login status.
   Future<void> reportDuplicate(
       {required int suspectedDupID, required int matchID}) async {
+    log('Making duplicate.');
     if (!loggedIn.value) {
       return Future.error(Exception("User not authenticated"));
     }
@@ -251,6 +258,7 @@ class ClientController {
   /// Throws on database failure, invalid login status.
   Future<void> flagReport(
       {required int flaggedID, required FlaggedReason reason}) async {
+    log('Flagging report.');
     if (!loggedIn.value) {
       return Future.error(Exception("User not authenticated"));
     }
@@ -292,6 +300,7 @@ class ClientController {
   /// To authenticate users who want to read a report.
   /// Throws Exceptions on failure to retrieve user data.
   Future<bool> logIn({required String email, required String password}) async {
+    log('Logging in.');
     try {
       // If there's already a session, the user has a logged-in client
       // Update the client state at the controller level to expose data to the
@@ -327,6 +336,7 @@ class ClientController {
       String? username,
       String? phone,
       String? fcmToken}) async {
+    log('Signing up.');
     try {
       final newUserID =
           await _loginService.signUp(email: email, password: password);
@@ -354,6 +364,7 @@ class ClientController {
   /// Throws on failure to retrieve data
   /// It is up to the caller to handle the exception
   Future<void> _getUserData() async {
+    log('Getting user data.');
     final userData = await _databaseService
         .getEntry(table: 'public.profiles', filters: [
       DatabaseFilter(column: 'id', operator: 'eq', value: _loginService.userID)

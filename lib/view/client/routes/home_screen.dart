@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:developer';
 import 'dart:io';
 
 import 'package:adaptive_dialog/adaptive_dialog.dart';
@@ -35,14 +36,18 @@ class _HomeScreenState extends State<HomeScreen>
 
   @override
   initState() {
+    log('Super initstate started.');
     super.initState();
+    log('Super initstate done.');
     _resetQueryTimer();
     _isVisible = true;
     _loading = ValueNotifier(false);
+    log('Home screen initstate done.');
   }
 
   @override
   dispose() {
+    log('Disposing');
     if (_queryTimer.isActive) {
       _queryTimer.cancel();
     }
@@ -53,6 +58,7 @@ class _HomeScreenState extends State<HomeScreen>
 
   @override
   void didChangeAppLifecycleState(state) {
+    log('Lifecycle change');
     // Stop the timer if the app is backgrounded or otherwise
     // This behaves differently depending on device and may not be called.
     if (AppLifecycleState.resumed != state) {
@@ -90,26 +96,40 @@ class _HomeScreenState extends State<HomeScreen>
     if (null == ModalRoute.of(context)) {
       return;
     }
+    log('Subscribing to page observer.');
     widget.routeObserver.subscribe(this, ModalRoute.of(context)!);
   }
 
   void _resetQueryTimer() {
-    _queryTimer = Timer.periodic(const Duration(seconds: 1), (_) {
+    _queryTimer = Timer.periodic(const Duration(seconds: 10), (_) {
+      log('querying home screen');
       if (!mounted) {
+        log('Not mounted.');
         return;
       }
       if (!_isVisible) {
+        log('Not visible.');
         return;
       }
       setState(() {});
+      log('calling setstate okay');
     });
   }
 
   @override
   Widget build(BuildContext context) {
+    log('Building home');
     final apple = Platform.isMacOS || Platform.isIOS;
+    return const Scaffold(
+      body: Center(
+        child: Text('Testing'),
+      ),
+    );
     return PopScope(
       canPop: false,
+      onPopInvokedWithResult: (pop, result) {
+        log('context trying to pop.');
+      },
       child: ValueListenableBuilder(
           valueListenable: widget.controller.loggedIn,
           builder: (context, loggedIn, child) {
@@ -151,7 +171,6 @@ class _HomeScreenState extends State<HomeScreen>
                 ]),
               ),
               body: Stack(children: [
-                const FloatingMenuButton(),
                 ReportViewerMap(
                     controller: widget.controller,
                     handleError: () {
@@ -169,6 +188,7 @@ class _HomeScreenState extends State<HomeScreen>
                             .showSnackBar(errorBar);
                       });
                     }),
+                const FloatingMenuButton(),
               ]),
               floatingActionButton: ValueListenableBuilder(
                   valueListenable: _loading,

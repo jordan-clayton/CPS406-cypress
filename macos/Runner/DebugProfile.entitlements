@@ -8,5 +8,8 @@
 	<true/>
 	<key>com.apple.security.network.server</key>
 	<true/>
+	<!-- This is required for geolocator -->
+	<key>com.apple.security.personal-information.location</key>
+    <true/>
 </dict>
 </plist>

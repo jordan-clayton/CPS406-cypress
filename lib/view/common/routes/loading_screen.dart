@@ -12,7 +12,9 @@ class LoadingScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: adaptiveAppBar(title: 'Cypress: Now Loading'),
-        body: const Center(child: CircularProgressIndicator.adaptive()));
+      appBar: adaptiveAppBar(title: 'Cypress: Now Loading'),
+      body: const Center(child: CircularProgressIndicator.adaptive()),
+      backgroundColor: Theme.of(context).colorScheme.surface,
+    );
   }
 }

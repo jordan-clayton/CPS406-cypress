@@ -10,7 +10,8 @@ class PostgrestDatabaseService implements DatabaseService {
   bool _initialized = false;
 
   PostgrestDatabaseService({required PostgrestDatabaseClient client})
-      : _client = client;
+      : _client = client,
+        _initialized = client.initialized;
 
   // If we swap out at runtime
   void client(newClient) => {_client = newClient};

@@ -25,8 +25,8 @@ class _LoginFormScreenState extends State<LoginScreen> {
   late final TextEditingController _passwordController;
   late String _email;
   late String _password;
-  late final String? _errorEmail;
-  late final String? _errorPassword;
+  String? _errorEmail;
+  String? _errorPassword;
 
   @override
   initState() {
@@ -91,7 +91,7 @@ class _LoginFormScreenState extends State<LoginScreen> {
       appBar: adaptiveAppBar(title: 'Log In'),
       body: ListView(children: [
         if (apple && null != _errorEmail)
-          Text(_errorEmail,
+          Text(_errorEmail!,
               style: const TextStyle(
                   color: CupertinoColors.systemRed, fontSize: 12)),
         (apple)
@@ -107,7 +107,7 @@ class _LoginFormScreenState extends State<LoginScreen> {
                     errorText: _errorEmail),
               ),
         if (apple && null != _errorPassword)
-          Text(_errorPassword,
+          Text(_errorPassword!,
               style: const TextStyle(
                   color: CupertinoColors.systemRed, fontSize: 12)),
         (apple)
