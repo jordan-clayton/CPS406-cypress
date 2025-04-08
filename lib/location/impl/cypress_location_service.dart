@@ -14,6 +14,7 @@ class CypressLocationService implements LocationService {
   late StreamSubscription<Position> _positionStream;
   StreamSubscription<ServiceStatus>? _permissionStream;
   Timer? _webPermissionPollingTimer;
+  Timer? _webLocationPollingTimer;
   late final ValueNotifier<bool> _hasLocationServices;
   late final Map<String, void Function()> _locationListeners;
 
@@ -49,12 +50,14 @@ class CypressLocationService implements LocationService {
     // If there is no access to location permissions, just accept the fallback toronto position
     if (permission == LocationPermission.deniedForever ||
         permission == LocationPermission.unableToDetermine) {
-      log('Denied or unable to determine');
+      // Set up subscription timers anyways.
+      // The location stream will throw and handle,
+      // The permission streams will set up listeners to resume location services.
+      _initSubscription();
       return;
     }
 
     // Otherwise, grab the location and set up the streamsubscription.
-    log('Setting up location and stream.');
     await _trySetLocation();
     _initSubscription();
   }
@@ -64,16 +67,9 @@ class CypressLocationService implements LocationService {
         accuracy: LocationAccuracy.high,
         timeLimit: Duration(milliseconds: 500));
     try {
-      if (kDebugMode) {
-        log('Toronto default location: $_lastLocation');
-      }
       _lastLocation = await Geolocator.getCurrentPosition(
           locationSettings: locationSettings);
-      log('Location should be set');
       _hasLocationServices.value = true;
-      if (kDebugMode) {
-        log('Newly set location: $_lastLocation');
-      }
     } catch (e, s) {
       log(e.toString(), stackTrace: s);
     }
@@ -114,19 +110,14 @@ class CypressLocationService implements LocationService {
     _positionStream =
         Geolocator.getPositionStream(locationSettings: locationSettings).listen(
             (Position? position) {
-              log('Position stream tryGet location');
               if (null != position) {
                 _lastLocation = position;
                 _hasLocationServices.value = true;
               }
-              log('position from location stream returning null');
             },
-            onDone: () {
-              log('Locations stream closed');
-            },
+            onDone: () {},
             cancelOnError: false,
             onError: (_) {
-              log('Disabled service, reset location');
               _resetLocation();
             });
 
@@ -140,10 +131,24 @@ class CypressLocationService implements LocationService {
         final permission = await Geolocator.checkPermission();
         if (LocationPermission.always == permission ||
             LocationPermission.whileInUse == permission) {
-          await _trySetLocation();
+          // If locationServices has been disabled, grab the new location
+          // immediately.
+          if (!_hasLocationServices.value) {
+            await _trySetLocation();
+            return;
+          }
+          // Otherwise, just let the location update be handled by the location poller.
+          _hasLocationServices.value = true;
         } else {
           _resetLocation();
         }
+      });
+      _webLocationPollingTimer =
+          Timer.periodic(const Duration(seconds: 5), (_) async {
+        if (!_hasLocationServices.value) {
+          return;
+        }
+        await _trySetLocation();
       });
     }
     // Otherwise, the application should have location services provided by the OS
@@ -152,11 +157,9 @@ class CypressLocationService implements LocationService {
           Geolocator.getServiceStatusStream().listen((status) async {
         if (status == ServiceStatus.enabled) {
           // Update location and notify listeners
-          log('Re-enabled service, try to get location');
           await _trySetLocation();
         } else {
           // Reset location and notify listeners
-          log('Disabled service, reset location');
           _resetLocation();
         }
       });
@@ -168,6 +171,7 @@ class CypressLocationService implements LocationService {
     _positionStream.cancel();
     _permissionStream?.cancel();
     _webPermissionPollingTimer?.cancel();
+    _webLocationPollingTimer?.cancel();
   }
 
   @override
@@ -193,10 +197,8 @@ class CypressLocationService implements LocationService {
   void removeLocationListener({required String owner}) {
     final callback = _locationListeners.remove(owner);
     if (null == callback) {
-      log('Null location callback on remove.');
       return;
     }
-    log('Removing location listener for: $owner');
     _hasLocationServices.removeListener(callback);
   }
 }

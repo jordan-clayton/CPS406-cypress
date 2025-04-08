@@ -1,5 +1,3 @@
-import 'dart:developer';
-
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
@@ -45,15 +43,11 @@ class _ReportViewerMapState extends State<ReportViewerMap> {
   }
 
   void _onLocationPermissionChanged(bool permission) {
-    log('LocationPermissionChanged');
     if (!mounted) {
-      log('Not mounted');
       return;
     }
     setState(() {
       if (permission) {
-        log('Should be moving location');
-        log('Expect moving to ${widget.controller.clientLocation}');
         _mapController.move(
             widget.controller.clientLocation, _mapController.camera.zoom);
       } else {
