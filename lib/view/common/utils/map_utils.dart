@@ -15,6 +15,7 @@ TileLayer get mapLayer => TileLayer(
 
 // From flutter_map: https://github.com/fleaflet/flutter_map/blob/cdb3b230376d1452b03e90f2d49ad2c26979244d/example/lib/pages/home.dart
 RichAttributionWidget get mapAttribution => RichAttributionWidget(
+        alignment: AttributionAlignment.bottomLeft,
         popupInitialDisplayDuration: const Duration(seconds: 3),
         animationConfig: const ScaleRAWA(),
         attributions: [

@@ -1,4 +1,3 @@
-import 'dart:developer';
 import 'dart:io';
 
 import 'package:flutter/cupertino.dart';
@@ -26,19 +25,16 @@ class _ReportViewerMapState extends State<ReportViewerMap> {
   Widget build(context) => FutureBuilder(
       future: widget.controller.getCurrentReports(),
       builder: (context, snapshot) {
-        log('Building reportviewer');
         // For "Apple-y" page transitions.
         final apple = Platform.isMacOS || Platform.isIOS;
 
         List<Widget> children = [mapLayer, mapAttribution];
-        log('Setup maplayer');
         // If an error handler has been provided, call it on an error.
         if (snapshot.hasError) {
           widget.handleError?.call();
         }
         // Fill the children/marker layer.
         if (snapshot.connectionState == ConnectionState.done) {
-          log('marker snapshot done');
           var markers = snapshot.data
                   ?.map((r) => Marker(
                         point: LatLng(
