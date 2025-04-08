@@ -45,6 +45,7 @@ class _ReportFormScreenState extends State<ReportFormScreen> {
 
   void _initControllers() {
     _descriptionController = TextEditingController();
+    _description = '';
     _descriptionController.addListener(_descriptionListen);
   }
 

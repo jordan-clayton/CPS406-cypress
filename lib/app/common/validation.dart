@@ -22,7 +22,8 @@ bool validPhone(String phone) {
   // Exchange code
   // Optional dash/space
   // Subscriber number
-  const pattern = r'^(\+\d{1,2}\s?)?\(?\d{3}\)?[\s.-]?\d{3}[\s.-]?\d{4}$';
+  const pattern =
+      r'^(\+?\d{1,3}[\s.-]?)?(\(?\d{1,4}\)?[\s.-]?)?(\d{1,4}[\s.-]?)*\d{1,4}$';
   return _applyRegExp(phone, pattern);
 }
 

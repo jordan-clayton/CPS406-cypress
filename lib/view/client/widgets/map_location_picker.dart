@@ -27,7 +27,7 @@ class LocationPickerMap extends StatelessWidget {
     return FlutterMap(
         options: MapOptions(
             initialCenter: loc,
-            initialZoom: initialZoom ?? 13.0,
+            initialZoom: initialZoom ?? 15.0,
             onTap: (_, p) => onLocationPicked?.call(p),
             onPositionChanged: (c, _) =>
                 onPositionChanged?.call(c.center, c.zoom),

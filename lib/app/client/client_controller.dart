@@ -348,8 +348,9 @@ class ClientController {
         _user!.username = username ?? _user!.username;
         _user!.phone = phone ?? _user!.phone;
 
+        // TODO: fix this -> Not sure if supabase authentication requires validation before logging in/sending data.
         await _databaseService.createEntry(
-          table: 'public.profiles',
+          table: 'profiles',
           entry: _user!.toEntity(),
         );
       }
@@ -366,9 +367,10 @@ class ClientController {
   Future<void> _getUserData() async {
     log('Getting user data.');
     final userData = await _databaseService
-        .getEntry(table: 'public.profiles', filters: [
+        .getEntry(table: 'profiles', filters: [
       DatabaseFilter(column: 'id', operator: 'eq', value: _loginService.userID)
     ]);
+    log('Grabbed user data.');
 
     _user = User.fromEntity(userData);
   }

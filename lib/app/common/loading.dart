@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../db/impl/postgrest_db_service.dart';
@@ -35,6 +37,12 @@ Future<ClientController> initializeControllerWithSupabase() async {
 
   // If the user has a profile with the app, try grabbing the data
   // Nothing will happen if the user is not logged in.
-  controller.tryRestoreUserSession();
+  try {
+    log('Trying to get user session');
+    await controller.tryRestoreUserSession();
+    log('Successfully got user session');
+  } catch (e, s) {
+    log(e.toString(), stackTrace: s);
+  }
   return controller;
 }

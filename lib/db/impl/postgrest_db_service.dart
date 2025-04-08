@@ -55,6 +55,7 @@ class PostgrestDatabaseService implements DatabaseService {
 
   // NOTE: the supabase API will automatically perform joins via foreign keys
   // if we handle it in the select clause (ie. a string in the columns list).
+  // TODO: refactor this - should return nullable.
   @override
   Future<Map<String, dynamic>> getEntry(
       {required String table,

@@ -47,9 +47,15 @@ class _SignUpScreenState extends State<SignUpScreen> {
 
   void _initControllers() {
     _emailController = TextEditingController();
+    _email = '';
+    _emailController.addListener(_listenEmail);
     _usernameController = TextEditingController();
+    _usernameController.addListener(_listenUsername);
     _phoneController = TextEditingController();
+    _phoneController.addListener(_listenPhone);
     _passwordController = TextEditingController();
+    _passwordController.addListener(_listenPassword);
+    _password = '';
   }
 
   void _disposeControllers() {

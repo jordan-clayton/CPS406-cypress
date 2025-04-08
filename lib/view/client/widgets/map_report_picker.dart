@@ -42,6 +42,7 @@ class ReportPickerMap extends StatelessWidget {
         options: MapOptions(
             initialCenter: initialLocation ??
                 const LatLng(constants.torontoLat, constants.torontoLong),
+            initialZoom: 15,
             onTap: (_, p) => onDismiss?.call(),
             keepAlive: true),
         children: [mapLayer, MarkerLayer(markers: markers)]);

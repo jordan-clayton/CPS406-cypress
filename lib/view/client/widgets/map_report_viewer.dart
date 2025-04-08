@@ -21,6 +21,16 @@ class ReportViewerMap extends StatefulWidget {
 }
 
 class _ReportViewerMapState extends State<ReportViewerMap> {
+  // To prevent flickering, cache the previous snapshot's report records.
+  // This happens in the background; the repaint happens whenever there's new data.
+  late List<Marker> _markers;
+
+  @override
+  void initState() {
+    super.initState();
+    _markers = [];
+  }
+
   @override
   Widget build(context) => FutureBuilder(
       future: widget.controller.getCurrentReports(),
@@ -35,12 +45,12 @@ class _ReportViewerMapState extends State<ReportViewerMap> {
         }
         // Fill the children/marker layer.
         if (snapshot.connectionState == ConnectionState.done) {
-          var markers = snapshot.data
+          _markers = snapshot.data
                   ?.map((r) => Marker(
                         point: LatLng(
                             r.latitude.toDouble(), r.longitude.toDouble()),
-                        width: 30,
-                        height: 30,
+                        width: 40,
+                        height: 40,
                         child: GestureDetector(
                           onTap: () => Navigator.push(
                               context,
@@ -54,16 +64,18 @@ class _ReportViewerMapState extends State<ReportViewerMap> {
                                           report: r,
                                           controller: widget.controller))),
                           child: const Icon(Icons.location_pin,
-                              size: 30, color: Colors.black),
+                              size: 40, color: Colors.black),
                         ),
                       ))
                   .toList(growable: false) ??
               [];
-          children.add(MarkerLayer(markers: markers));
         }
+        // To reduce flickering on bg refresh, use the cached _markers.
+        children.add(MarkerLayer(markers: _markers));
         return FlutterMap(
           options: MapOptions(
             initialCenter: widget.controller.clientLocation,
+            initialZoom: 15,
           ),
           children: children,
         );

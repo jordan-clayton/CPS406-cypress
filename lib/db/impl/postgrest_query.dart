@@ -118,7 +118,11 @@ class PostgrestDatabaseQuery implements DatabaseQuery {
   @override
   Future<List<Map<String, dynamic>>> execute() async {
     _checkReady();
-    return [...await (_transformBuilder ?? _filterBuilder)];
+    final response = await (_transformBuilder ?? _filterBuilder);
+    if (null == response) {
+      return [];
+    }
+    return [...response];
   }
 
   // TODO: decide whether or not to silently apply or throw an exception.
