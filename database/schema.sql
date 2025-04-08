@@ -4,7 +4,7 @@
 -- TODO: create proper enumerated types
 CREATE TYPE problem_category as ENUM ('crime', 'fire', 'water', 'infrastructure');
 CREATE TYPE progress as ENUM ('opened', 'in-progress', 'closed');
-CREATE TYPE notifcation_type as ENUM ('sms', 'email', 'push');
+CREATE TYPE notification_type as ENUM ('sms', 'email', 'push');
 CREATE TYPE duplicate_severity as ENUM ('unlikely', 'possible', 'suspected', 'confirmed');
 CREATE TYPE flagged_reason as ENUM ('malicious', 'false-report', 'ambiguous', 'non-emergency');
 -- TODO: implement some sort of levels of privilege type deal?
