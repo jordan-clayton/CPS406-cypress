@@ -4,7 +4,7 @@
 -- TODO: create proper enumerated types
 CREATE TYPE problem_category as ENUM ('crime', 'fire', 'water', 'infrastructure');
 CREATE TYPE progress as ENUM ('opened', 'in-progress', 'closed');
-CREATE TYPE notifcation_type as ENUM ('sms', 'email', 'push');
+CREATE TYPE notification_type as ENUM ('sms', 'email', 'push');
 CREATE TYPE duplicate_severity as ENUM ('unlikely', 'possible', 'suspected', 'confirmed');
 CREATE TYPE flagged_reason as ENUM ('malicious', 'false-report', 'ambiguous', 'non-emergency');
 -- TODO: implement some sort of levels of privilege type deal?
@@ -12,8 +12,8 @@ CREATE TYPE auth as ENUM ('l2', 'l1', 'l0');
 
 -- TODO: server-side validation for email/phone.
 CREATE TABLE public.profiles (
-    id uuid NOT NULL,
-    username text NOT NULL DEFAULT "anon",
+    id uuid NOT NULL DEFAULT uuid_generate_v4(),
+    username text NOT NULL DEFAULT 'anon',
     -- Not sure if we're using FCM for push notifications.
     -- This should be encrypted regardless.
     fcm_token text,
@@ -35,7 +35,7 @@ CREATE TABLE employees (
 );
 
 CREATE TABLE reports (
-    id bigint NOT NULL AUTO_INCREMENT,
+    id bigint GENERATED ALWAYS AS IDENTITY NOT NULL,
     category problem_category NOT NULL,
     -- We could go with numeric for 131072 digits of precision
     -- double precision is 15 digits, likely all we need
