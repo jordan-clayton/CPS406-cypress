@@ -47,6 +47,8 @@ class User extends Equatable implements Comparable<User> {
         phone: phone ?? this.phone,
       );
 
+  UserView toView() => UserView(this);
+
   // Equatable requires final fields (hashcode + equality);
   // The hashcode should stay stable over time if we happen to use this object in the app
   @override
@@ -54,4 +56,15 @@ class User extends Equatable implements Comparable<User> {
 
   @override
   int compareTo(User other) => id.compareTo(other.id);
+}
+
+// Immutable wrapper class for constant references
+class UserView {
+  final User _user;
+
+  UserView(this._user);
+  String get username => _user.username;
+  String? get fcmToken => _user.fcmToken;
+  String? get email => _user.email;
+  String? get phone => _user.phone;
 }

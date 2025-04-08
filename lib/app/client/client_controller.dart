@@ -48,6 +48,11 @@ class ClientController {
 
   LatLng get clientLocation => _locationService.getLocation();
 
+  // For constant references to the user.
+  // Our User object is currently mutable; this might change depending on
+  // if/whether we finish a user-settings screen in time.
+  UserView? get user => _user?.toView();
+
   /// To supply current reports to the frontend
   /// Includes unverified reports; convey this to the user in the map to encourage
   /// community moderation.
@@ -83,7 +88,13 @@ class ClientController {
       final response = await _databaseService.updateEntry(
           table: 'public.profiles', entry: entity, retrieveUpdatedRecord: true);
 
-      assert(response['id'] == user.id);
+      if (kDebugMode) {
+        assert(response['id'] == user.id, 'Failed to update user.');
+      } else {
+        if (response['id'] != user.id) {
+          throw Exception('Failed to update user.');
+        }
+      }
       _user = User.fromEntity(response);
     } on Exception catch (e, s) {
       _logError(exception: e, stacktrace: s);
@@ -94,21 +105,31 @@ class ClientController {
   /// SubscriptionDTO holds all the relevant information for a subscription
   /// Since subscriptions can be anonymous, the contact method is embedded
   /// For registered users, expect this to match the user data.
-  /// Throws on data incoherence.
   /// Throws on database failure.
+  /// Subscribes anonymously if the data is incoherent.
   Future<void> subscribe({required SubscriptionDTO info}) async {
     try {
+      // If the user isn't authenticated/not signed up, subscribe anonymously.
       if (!loggedIn.value || null == _user) {
         return _subscribeAnonymous(anon: info);
       }
-      // Assert that the contact info is coherent.
+
+      // If the contact info is incoherent, subscribe anonymously.
+      // Leave it up to the user to update their contact information in the app.
+      // (feature pending).
       switch (info.notificationMethod) {
         case NotificationMethod.sms:
-          assert(_user!.phone == info.contact);
+          if (_user!.phone != info.contact) {
+            return _subscribeAnonymous(anon: info);
+          }
         case NotificationMethod.email:
-          assert(_user!.email == info.contact);
+          if (_user!.email != info.contact) {
+            return _subscribeAnonymous(anon: info);
+          }
         case NotificationMethod.push:
-          assert(_user!.fcmToken == info.contact);
+          if (_user!.fcmToken != info.contact) {
+            return _subscribeAnonymous(anon: info);
+          }
       }
 
       final sub = Subscription(
@@ -145,8 +166,13 @@ class ClientController {
       retrieveNewRecord: true,
       retrieveColumns: ['id'],
     );
-
-    assert(null != data['id']);
+    if (kDebugMode) {
+      assert(null != data['id'], 'Failed to create new user profile.');
+    } else {
+      if (null == data['id']) {
+        throw Exception('Failed to create new user profile.');
+      }
+    }
 
     final String userID = data['id'];
 
@@ -163,7 +189,7 @@ class ClientController {
   /// Throws if a user tries to report without registering/login.
   Future<void> makeReport({required Report newReport}) async {
     if (!loggedIn.value) {
-      return Future.error(Exception("User not authenticated"));
+      return Future.error(Exception("User not authenticated."));
     }
     try {
       final response = await _databaseService.createEntry(
@@ -171,8 +197,13 @@ class ClientController {
           entry: newReport.toEntity(),
           retrieveNewRecord: true,
           retrieveColumns: ['id']);
-
-      assert(null != response['id']);
+      if (kDebugMode) {
+        assert(null != response['id'], 'Failed to create report');
+      } else {
+        if (null == response['id']) {
+          throw Exception('Failed to create report.');
+        }
+      }
     } on Exception catch (e, s) {
       _logError(exception: e, stacktrace: s);
       return Future.error(e, s);
@@ -199,8 +230,17 @@ class ClientController {
       );
 
       // This will throw if there is an issue with the record insertion
-      assert(response['report_id'] == suspectedDupID &&
-          response['match_id'] == matchID);
+      if (kDebugMode) {
+        assert(
+            response['report_id'] == suspectedDupID &&
+                response['match_id'] == matchID,
+            'Failed to insert duplicate.');
+      } else {
+        if (response['report_id'] != suspectedDupID ||
+            response['match_id'] != matchID) {
+          throw Exception('Failed to insert duplicate.');
+        }
+      }
     } on Exception catch (e, s) {
       _logError(exception: e, stacktrace: s);
       return Future.error(e, s);
@@ -223,9 +263,17 @@ class ClientController {
         entry: flag.toEntity(),
         retrieveNewRecord: true,
       );
-
-      assert(response['report_id'] == flag.reportID &&
-          FlaggedReason.fromString(response['reason']) == flag.reason);
+      if (kDebugMode) {
+        assert(
+            response['report_id'] == flag.reportID &&
+                FlaggedReason.fromString(response['reason']) == flag.reason,
+            'Failed to create flagged entry.');
+      } else {
+        if (response['report_id'] != flag.reportID ||
+            FlaggedReason.fromString(response['reason']) != flag.reason) {
+          throw Exception('Failed to create flagged entry.');
+        }
+      }
     } on Exception catch (e, s) {
       _logError(exception: e, stacktrace: s);
       return Future.error(e, s);
