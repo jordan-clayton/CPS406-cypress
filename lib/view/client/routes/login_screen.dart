@@ -95,148 +95,165 @@ class _LoginFormScreenState extends State<LoginScreen> {
           Text(_errorEmail!,
               style: const TextStyle(
                   color: CupertinoColors.systemRed, fontSize: 12)),
-        (apple)
-            ? CupertinoTextField(
-                controller: _emailController,
-                placeholder: 'Email',
-              )
-            : TextField(
-                controller: _emailController,
-                decoration: InputDecoration(
-                    border: const OutlineInputBorder(),
-                    labelText: 'Email',
-                    errorText: _errorEmail),
-              ),
+        Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: (apple)
+              ? CupertinoTextField(
+                  controller: _emailController,
+                  placeholder: 'Email',
+                )
+              : TextField(
+                  controller: _emailController,
+                  decoration: InputDecoration(
+                      border: const OutlineInputBorder(),
+                      labelText: 'Email',
+                      errorText: _errorEmail),
+                ),
+        ),
         if (apple && null != _errorPassword)
-          Text(_errorPassword!,
-              style: const TextStyle(
-                  color: CupertinoColors.systemRed, fontSize: 12)),
-        (apple)
-            ? CupertinoTextField(
-                controller: _passwordController,
-                obscureText: true,
-                placeholder: 'Password')
-            : TextField(
-                controller: _passwordController,
-                obscureText: true,
-                decoration: InputDecoration(
-                    border: const OutlineInputBorder(),
-                    labelText: 'Password',
-                    errorText: _errorPassword),
-              ),
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Text(_errorPassword!,
+                style: const TextStyle(
+                    color: CupertinoColors.systemRed, fontSize: 12)),
+          ),
+        Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: (apple)
+              ? CupertinoTextField(
+                  controller: _passwordController,
+                  obscureText: true,
+                  placeholder: 'Password')
+              : TextField(
+                  controller: _passwordController,
+                  obscureText: true,
+                  decoration: InputDecoration(
+                      border: const OutlineInputBorder(),
+                      labelText: 'Password',
+                      errorText: _errorPassword),
+                ),
+        ),
 
         // Button to sign in
         ValueListenableBuilder(
             valueListenable: _loading,
             builder: (context, loggingIn, child) {
-              return FilledButton.icon(
-                  icon: (loggingIn)
-                      ? const CircularProgressIndicator.adaptive()
-                      : const Icon(null),
-                  onPressed: (loggingIn || _email.isEmpty || _password.isEmpty)
-                      ? null
-                      : () async {
-                          // Validate email
-                          if (!validEmail(_email)) {
-                            if (mounted) {
-                              setState(() {
-                                _errorEmail = 'Invalid email format';
-                              });
-                            }
-                            return;
-                          }
-
-                          // Validate password
-                          if (_password.length < 6) {
-                            if (mounted) {
-                              setState(() {
-                                _errorPassword =
-                                    'Password must be more than 6 characters.';
-                              });
-                            }
-                          }
-
-                          _loading.value = true;
-                          // Log in
-                          await widget.controller
-                              .logIn(email: _email, password: _password)
-                              .then((loggedIn) async {
-                            if (loggedIn) {
-                              if (!context.mounted) {
-                                return;
+              return Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: FilledButton.icon(
+                    icon: (loggingIn)
+                        ? const CircularProgressIndicator.adaptive()
+                        : const Icon(null),
+                    onPressed: (loggingIn ||
+                            _email.isEmpty ||
+                            _password.isEmpty)
+                        ? null
+                        : () async {
+                            // Validate email
+                            if (!validEmail(_email)) {
+                              if (mounted) {
+                                setState(() {
+                                  _errorEmail = 'Invalid email format';
+                                });
                               }
-                              Navigator.pop(context);
-                              // Give the navigator some time to pop the context.
-                              await Future.delayed(
-                                      const Duration(milliseconds: 200))
-                                  .then((_) {
+                              return;
+                            }
+
+                            // Validate password
+                            if (_password.length < 6) {
+                              if (mounted) {
+                                setState(() {
+                                  _errorPassword =
+                                      'Password must be more than 6 characters.';
+                                });
+                              }
+                            }
+
+                            _loading.value = true;
+                            // Log in
+                            await widget.controller
+                                .logIn(email: _email, password: _password)
+                                .then((loggedIn) async {
+                              if (loggedIn) {
+                                if (!context.mounted) {
+                                  return;
+                                }
+                                Navigator.pop(context);
+                                // Give the navigator some time to pop the context.
+                                await Future.delayed(
+                                        const Duration(milliseconds: 200))
+                                    .then((_) {
+                                  if (!mounted) {
+                                    return;
+                                  }
+                                  _loading.value = false;
+                                });
+                              } else {
+                                // Either an invalid email or password.
+                                _loading.value = false;
+                                setState(() {
+                                  _errorEmail = 'Failed to find account';
+                                  _errorPassword = 'Invalid email or password';
+                                });
+                              }
+                            }, onError: (e, s) {
+                              _loading.value = false;
+                              WidgetsBinding.instance.addPostFrameCallback((_) {
                                 if (!mounted) {
                                   return;
                                 }
-                                _loading.value = false;
-                              });
-                            } else {
-                              // Either an invalid email or password.
-                              _loading.value = false;
-                              setState(() {
-                                _errorEmail = 'Failed to find account';
-                                _errorPassword = 'Invalid email or password';
-                              });
-                            }
-                          }, onError: (e, s) {
-                            _loading.value = false;
-                            WidgetsBinding.instance.addPostFrameCallback((_) {
-                              if (!mounted) {
-                                return;
-                              }
-                              if (e is AuthException &&
-                                  e.code == 'invalid_credentials') {
-                                if (mounted) {
-                                  setState(() {
-                                    _errorEmail = 'Failed to find account';
-                                    _errorPassword =
-                                        'Invalid email or password';
-                                  });
+                                if (e is AuthException &&
+                                    e.code == 'invalid_credentials') {
+                                  if (mounted) {
+                                    setState(() {
+                                      _errorEmail = 'Failed to find account';
+                                      _errorPassword =
+                                          'Invalid email or password';
+                                    });
+                                  }
                                 }
-                              }
-                              const errorBar =
-                                  SnackBar(content: Text('Error logging in.'));
-                              ScaffoldMessenger.of(this.context)
-                                ..clearSnackBars()
-                                ..showSnackBar(errorBar);
+                                const errorBar = SnackBar(
+                                    content: Text('Error logging in.'));
+                                ScaffoldMessenger.of(this.context)
+                                  ..clearSnackBars()
+                                  ..showSnackBar(errorBar);
+                              });
                             });
-                          });
-                        },
-                  label: const Text('Sign in'));
+                          },
+                    label: const Text('Sign in')),
+              );
             }),
         // Button to sign up
         ValueListenableBuilder(
             valueListenable: _loading,
             builder: (context, signUpPressed, child) {
-              return FilledButton.tonal(
-                  onPressed: (signUpPressed)
-                      ? null
-                      : () async {
-                          _loading.value = true;
-                          await Navigator.pushReplacement(
-                                  context,
-                                  (apple)
-                                      ? CupertinoPageRoute(
-                                          builder: (context) => SignUpScreen(
-                                              controller: widget.controller),
-                                        )
-                                      : MaterialPageRoute(
-                                          builder: (context) => SignUpScreen(
-                                              controller: widget.controller)))
-                              .then((_) {
-                            if (!mounted) {
-                              return;
-                            }
+              return Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: FilledButton.tonal(
+                    onPressed: (signUpPressed)
+                        ? null
+                        : () async {
+                            _loading.value = true;
+                            await Navigator.pushReplacement(
+                                    context,
+                                    (apple)
+                                        ? CupertinoPageRoute(
+                                            builder: (context) => SignUpScreen(
+                                                controller: widget.controller),
+                                          )
+                                        : MaterialPageRoute(
+                                            builder: (context) => SignUpScreen(
+                                                controller: widget.controller)))
+                                .then((_) {
+                              if (!mounted) {
+                                return;
+                              }
 
-                            _loading.value = false;
-                          });
-                        },
-                  child: const Text('Sign up'));
+                              _loading.value = false;
+                            });
+                          },
+                    child: const Text('Sign up')),
+              );
             }),
       ]),
     );

@@ -13,6 +13,10 @@ enum Authority {
         'l0' => l0,
         _ => throw FormatException('Invalid Authority level: $au')
       };
+
+  @override
+  toString() => name;
+  toEntity() => name;
 }
 
 class Employee extends Equatable implements Comparable<Employee> {
@@ -46,7 +50,7 @@ class Employee extends Equatable implements Comparable<Employee> {
         'first_name': firstName,
         'last_name': lastName,
         'employee_id': employeeID,
-        'authority': auth.name
+        'authority': auth.toEntity()
       };
 
   @override

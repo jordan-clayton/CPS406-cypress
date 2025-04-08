@@ -131,82 +131,107 @@ class _SignUpScreenState extends State<SignUpScreen> {
 
   List<Widget> _buildAdaptiveTextFields({required bool apple}) {
     // Common
-    const optionalHeader = ListTile(
-      title: Text('Optional:'),
+    const optionalHeader = Padding(
+      padding: EdgeInsets.all(8.0),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.start,
+        children: [Text('Optional:')],
+      ),
     );
-    const requiredHeader = ListTile(title: Text('Required:'));
+    const requiredHeader = Padding(
+      padding: EdgeInsets.all(8.0),
+      child: Row(
+          mainAxisAlignment: MainAxisAlignment.start,
+          children: [Text('Required:')]),
+    );
 
     // Buttons.
     final signUpButton = ValueListenableBuilder(
         valueListenable: _loading,
         builder: (context, loading, child) {
-          return FilledButton.icon(
-              icon: (loading)
-                  ? const CircularProgressIndicator.adaptive()
-                  : const Icon(null),
-              onPressed: (loading || _email.isEmpty || _password.isEmpty)
-                  ? null
-                  : () async {
-                      // Validate
-                      if (!validEmail(_email)) {
-                        if (mounted) {
-                          setState(() {
-                            _errorEmail = 'Invalid email format';
-                          });
-                        }
-                        return;
-                      }
-                      if (null != _phone && !validPhone(_phone!)) {
-                        if (mounted) {
-                          setState(() {
-                            _errorPhone = 'Invalid phone number';
-                          });
-                        }
-                        return;
-                      }
-
-                      if (_password.length < 6) {
-                        if (mounted) {
-                          setState(() {
-                            _errorPassword =
-                                'Password length must be at least 6 character.';
-                          });
-                        }
-                        return;
-                      }
-
-                      // Assume username is correct and push the sign-up
-                      _loading.value = true;
-                      await widget.controller
-                          .signUp(
-                              email: _email,
-                              password: _password,
-                              username: _username,
-                              phone: _phone)
-                          .then((signedUp) async {
-                        if (signedUp) {
-                          if (!mounted) {
-                            return;
+          return Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: FilledButton.icon(
+                icon: (loading)
+                    ? const CircularProgressIndicator.adaptive()
+                    : const Icon(null),
+                onPressed: (loading || _email.isEmpty || _password.isEmpty)
+                    ? null
+                    : () async {
+                        // Validate
+                        if (!validEmail(_email)) {
+                          if (mounted) {
+                            setState(() {
+                              _errorEmail = 'Invalid email format';
+                            });
                           }
-                          // Re-route the user to the login screen
-                          Navigator.pushReplacement(
-                              this.context,
-                              (apple)
-                                  ? CupertinoPageRoute(
-                                      builder: (context) => LoginScreen(
-                                          controller: widget.controller))
-                                  : MaterialPageRoute(
-                                      builder: (context) => LoginScreen(
-                                          controller: widget.controller)));
-                          await Future.delayed(
-                                  const Duration(milliseconds: 200))
-                              .then((_) {
+                          return;
+                        }
+                        if (null != _phone && !validPhone(_phone!)) {
+                          if (mounted) {
+                            setState(() {
+                              _errorPhone = 'Invalid phone number';
+                            });
+                          }
+                          return;
+                        }
+
+                        if (_password.length < 6) {
+                          if (mounted) {
+                            setState(() {
+                              _errorPassword =
+                                  'Password length must be at least 6 character.';
+                            });
+                          }
+                          return;
+                        }
+
+                        // Assume username is correct and push the sign-up
+                        _loading.value = true;
+                        await widget.controller
+                            .signUp(
+                                email: _email,
+                                password: _password,
+                                username: _username,
+                                phone: _phone)
+                            .then((signedUp) async {
+                          if (signedUp) {
                             if (!mounted) {
                               return;
                             }
+                            // Re-route the user to the login screen
+                            Navigator.pushReplacement(
+                                this.context,
+                                (apple)
+                                    ? CupertinoPageRoute(
+                                        builder: (context) => LoginScreen(
+                                            controller: widget.controller))
+                                    : MaterialPageRoute(
+                                        builder: (context) => LoginScreen(
+                                            controller: widget.controller)));
+                            await Future.delayed(
+                                    const Duration(milliseconds: 200))
+                                .then((_) {
+                              if (!mounted) {
+                                return;
+                              }
+                              _loading.value = false;
+                            });
+                          } else {
                             _loading.value = false;
-                          });
-                        } else {
+                            WidgetsBinding.instance.addPostFrameCallback((_) {
+                              if (!mounted) {
+                                return;
+                              }
+
+                              const errorBar = SnackBar(
+                                  content: Text('Sign up unsuccessful'));
+                              ScaffoldMessenger.of(this.context)
+                                ..clearSnackBars()
+                                ..showSnackBar(errorBar);
+                            });
+                          }
+                        }, onError: (e, s) {
                           _loading.value = false;
                           WidgetsBinding.instance.addPostFrameCallback((_) {
                             if (!mounted) {
@@ -214,28 +239,15 @@ class _SignUpScreenState extends State<SignUpScreen> {
                             }
 
                             const errorBar =
-                                SnackBar(content: Text('Sign up unsuccessful'));
+                                SnackBar(content: Text('Error signing up'));
                             ScaffoldMessenger.of(this.context)
                               ..clearSnackBars()
                               ..showSnackBar(errorBar);
                           });
-                        }
-                      }, onError: (e, s) {
-                        _loading.value = false;
-                        WidgetsBinding.instance.addPostFrameCallback((_) {
-                          if (!mounted) {
-                            return;
-                          }
-
-                          const errorBar =
-                              SnackBar(content: Text('Error signing up'));
-                          ScaffoldMessenger.of(this.context)
-                            ..clearSnackBars()
-                            ..showSnackBar(errorBar);
                         });
-                      });
-                    },
-              label: const Text('Sign up'));
+                      },
+                label: const Text('Sign up')),
+          );
         });
 
     // Cupertino
@@ -244,71 +256,108 @@ class _SignUpScreenState extends State<SignUpScreen> {
         // Optional fields
         optionalHeader,
         // Username
-        CupertinoTextField(
-            controller: _usernameController, placeholder: 'Username'),
+        Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: CupertinoTextField(
+              controller: _usernameController, placeholder: 'Username'),
+        ),
         // Phone
-        CupertinoTextField(
-          controller: _phoneController,
-          placeholder: 'Phone',
-          keyboardType: TextInputType.phone,
+        Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: CupertinoTextField(
+            controller: _phoneController,
+            placeholder: 'Phone',
+            keyboardType: TextInputType.phone,
+          ),
         ),
         if (null != _errorPhone)
-          Text(_errorPhone!,
-              style: const TextStyle(
-                  color: CupertinoColors.systemRed, fontSize: 12)),
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Text(_errorPhone!,
+                style: const TextStyle(
+                    color: CupertinoColors.systemRed, fontSize: 12)),
+          ),
         // Required fields
         requiredHeader,
-        CupertinoTextField(
-          controller: _emailController,
-          placeholder: 'Email',
+        Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: CupertinoTextField(
+            controller: _emailController,
+            placeholder: 'Email',
+          ),
         ),
         if (null != _errorEmail)
-          Text(_errorEmail!,
-              style: const TextStyle(
-                  color: CupertinoColors.systemRed, fontSize: 12)),
-        CupertinoTextField(
-          controller: _passwordController,
-          obscureText: true,
-          placeholder: 'Password',
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Text(_errorEmail!,
+                style: const TextStyle(
+                    color: CupertinoColors.systemRed, fontSize: 12)),
+          ),
+        Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: CupertinoTextField(
+            controller: _passwordController,
+            obscureText: true,
+            placeholder: 'Password',
+          ),
         ),
         if (null != _errorPassword)
-          Text(_errorPassword!,
-              style: const TextStyle(
-                  color: CupertinoColors.systemRed, fontSize: 12)),
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Text(_errorPassword!,
+                style: const TextStyle(
+                    color: CupertinoColors.systemRed, fontSize: 12)),
+          ),
         signUpButton
       ];
     }
     // Material
     return [
       optionalHeader,
-      TextField(
-        controller: _usernameController,
-        decoration: const InputDecoration(
-          labelText: 'Username',
+      Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: TextField(
+          controller: _usernameController,
+          decoration: const InputDecoration(
+            border: OutlineInputBorder(),
+            labelText: 'Username',
+          ),
         ),
       ),
-      TextField(
-          controller: _phoneController,
-          keyboardType: TextInputType.phone,
-          decoration: InputDecoration(
-            labelText: 'Phone',
-            errorText: _errorPhone,
-          )),
+      Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: TextField(
+            controller: _phoneController,
+            keyboardType: TextInputType.phone,
+            decoration: InputDecoration(
+              border: const OutlineInputBorder(),
+              labelText: 'Phone',
+              errorText: _errorPhone,
+            )),
+      ),
       requiredHeader,
-      TextField(
-        controller: _emailController,
-        decoration: InputDecoration(
-          labelText: 'Email',
-          errorText: _errorEmail,
+      Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: TextField(
+          controller: _emailController,
+          decoration: InputDecoration(
+            border: const OutlineInputBorder(),
+            labelText: 'Email',
+            errorText: _errorEmail,
+          ),
         ),
       ),
-      TextField(
-          controller: _passwordController,
-          obscureText: true,
-          decoration: InputDecoration(
-            labelText: 'Password',
-            errorText: _errorPassword,
-          )),
+      Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: TextField(
+            controller: _passwordController,
+            obscureText: true,
+            decoration: InputDecoration(
+              border: const OutlineInputBorder(),
+              labelText: 'Password',
+              errorText: _errorPassword,
+            )),
+      ),
       signUpButton
     ];
   }

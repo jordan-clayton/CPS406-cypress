@@ -124,62 +124,75 @@ class _SubscriptionInfoPickerScreen
     return Scaffold(
       appBar: adaptiveAppBar(title: 'Subscription'),
       body: ListView(children: [
-        DropdownMenu(
-          label: const Text('Notification method'),
-          initialSelection: _notificationMethod,
-          onSelected: (newMethod) {
-            if (!mounted) {
-              return;
-            }
+        Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: DropdownMenu(
+            // This will force the dropdown to fill all available space of the parent
+            expandedInsets: EdgeInsets.zero,
+            label: const Text('Notification method'),
+            initialSelection: _notificationMethod,
+            onSelected: (newMethod) {
+              if (!mounted) {
+                return;
+              }
 
-            setState(() {
-              _notificationMethod = newMethod;
-              // Keep the contact info field coherent.
-              _contactInfo = switch (_notificationMethod) {
-                NotificationMethod.sms => _phoneController.text,
-                NotificationMethod.email => _emailController.text,
-                NotificationMethod.push => null,
-                _ => null,
-              };
-            });
-          },
-          dropdownMenuEntries: NotificationMethod.values
-              .map((e) => DropdownMenuEntry(
-                  value: e, label: intl.toBeginningOfSentenceCase(e.name)))
-              .toList(growable: false),
+              setState(() {
+                _notificationMethod = newMethod;
+                // Keep the contact info field coherent.
+                _contactInfo = switch (_notificationMethod) {
+                  NotificationMethod.sms => _phoneController.text,
+                  NotificationMethod.email => _emailController.text,
+                  NotificationMethod.push => null,
+                  _ => null,
+                };
+              });
+            },
+            dropdownMenuEntries: NotificationMethod.values
+                .map((e) => DropdownMenuEntry(
+                    value: e, label: intl.toBeginningOfSentenceCase(e.name)))
+                .toList(growable: false),
+          ),
         ),
 
         // This will output nothing (sizedbox.shrink) if there are no errors.
         if (apple) _appleErrorField(),
         // Adaptive textfield for inputting the contact info.
-        _inputField(apple: apple),
+        Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: _inputField(apple: apple),
+        ),
+        const Divider(),
         // Submit button.
         ValueListenableBuilder(
             valueListenable: _loading,
             builder: (context, loading, child) {
-              return FilledButton(
-                onPressed: (!canSubmit || loading)
-                    ? null
-                    : () async {
-                        if (!_validateContact()) {
-                          return;
-                        }
-                        _loading.value = true;
-                        // Return the subscription DTO.
-                        Navigator.pop(
-                            context,
-                            SubscriptionDTO(
-                                reportID: widget.reportID,
-                                notificationMethod: _notificationMethod!,
-                                contact: _contactInfo!));
-                        await Future.delayed(const Duration(milliseconds: 200))
-                            .then((_) {
-                          if (mounted) {
-                            _loading.value = false;
+              return Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: FilledButton(
+                  onPressed: (!canSubmit || loading)
+                      ? null
+                      : () async {
+                          if (!_validateContact()) {
+                            return;
                           }
-                        });
-                      },
-                child: const Text('Submit'),
+                          _loading.value = true;
+                          // Return the subscription DTO.
+                          Navigator.pop(
+                              context,
+                              SubscriptionDTO(
+                                  reportID: widget.reportID,
+                                  notificationMethod: _notificationMethod!,
+                                  contact: _contactInfo!));
+                          await Future.delayed(
+                                  const Duration(milliseconds: 200))
+                              .then((_) {
+                            if (mounted) {
+                              _loading.value = false;
+                            }
+                          });
+                        },
+                  child: const Text('Submit'),
+                ),
               );
             }),
       ]),
@@ -217,17 +230,20 @@ class _SubscriptionInfoPickerScreen
         NotificationMethod.push => const Text('Not implemented'),
       };
 
-  Widget _appleErrorField() => switch (_notificationMethod) {
-        NotificationMethod.sms => (null != _errorPhone)
-            ? Text(_errorPhone!,
-                style: const TextStyle(
-                    color: CupertinoColors.systemRed, fontSize: 12))
-            : const SizedBox.shrink(),
-        NotificationMethod.email => (null != _errorEmail)
-            ? Text(_errorEmail!,
-                style: const TextStyle(
-                    color: CupertinoColors.systemRed, fontSize: 12))
-            : const SizedBox.shrink(),
-        _ => const SizedBox.shrink(),
-      };
+  Widget _appleErrorField() => Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: switch (_notificationMethod) {
+          NotificationMethod.sms => (null != _errorPhone)
+              ? Text(_errorPhone!,
+                  style: const TextStyle(
+                      color: CupertinoColors.systemRed, fontSize: 12))
+              : const SizedBox.shrink(),
+          NotificationMethod.email => (null != _errorEmail)
+              ? Text(_errorEmail!,
+                  style: const TextStyle(
+                      color: CupertinoColors.systemRed, fontSize: 12))
+              : const SizedBox.shrink(),
+          _ => const SizedBox.shrink(),
+        },
+      );
 }

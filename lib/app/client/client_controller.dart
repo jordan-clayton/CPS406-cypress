@@ -285,6 +285,9 @@ class ClientController {
     } on Exception catch (e, s) {
       _logError(exception: e, stacktrace: s);
       return Future.error(e, s);
+    } catch (e, s) {
+      log(e.toString(), stackTrace: s);
+      return Future.error(e, s);
     }
   }
 

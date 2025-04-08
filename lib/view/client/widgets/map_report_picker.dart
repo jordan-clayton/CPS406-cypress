@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
+import 'package:intl/intl.dart';
 import 'package:latlong2/latlong.dart';
 
 import '../../../app/common/constants.dart' as constants;
@@ -29,7 +30,45 @@ class ReportPickerMap extends StatelessWidget {
               width: 30,
               height: 30,
               child: GestureDetector(
-                onTap: () => onLocationPicked?.call(r.id),
+                onTap: () async {
+                  final picked = await showModalBottomSheet(
+                    context: context,
+                    builder: (context) => ListView(shrinkWrap: true, children: [
+                      Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Center(
+                            child: Text('Report: ${r.id}',
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .headlineMedium)),
+                      ),
+                      ListTile(
+                        title: Text(
+                            toBeginningOfSentenceCase(r.category.toString())),
+                        subtitle: const Text('Category'),
+                      ),
+                      ListTile(
+                          leading: const Icon(Icons.description_outlined),
+                          title: const Text('Description'),
+                          subtitle: Text(r.description)),
+                      const Divider(),
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(8.0, 8.0, 8.0, 16.0),
+                        child: FilledButton(
+                            child: const Text('Confirm'),
+                            onPressed: () {
+                              Navigator.pop(context, true);
+                            }),
+                      )
+                    ]),
+                  );
+
+                  if (null == picked || !picked) {
+                    return;
+                  }
+
+                  onLocationPicked?.call(r.id);
+                },
                 child: (null != selectedID && selectedID == r.id)
                     ? const Icon(Icons.location_pin,
                         size: 30, color: Colors.blue)

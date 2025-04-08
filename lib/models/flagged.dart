@@ -18,8 +18,14 @@ enum FlaggedReason implements Comparable<FlaggedReason> {
   toString() => switch (this) {
         nonEmergency => 'non-emergency',
         ambiguous => 'ambiguous',
-        falseReport => 'false-report',
+        falseReport => 'false report',
         malicious => 'malicious'
+      };
+  toEntity() => switch (this) {
+        FlaggedReason.nonEmergency => 'non-emergency',
+        FlaggedReason.ambiguous => 'ambiguous',
+        FlaggedReason.falseReport => 'false-report',
+        FlaggedReason.malicious => 'malicious',
       };
 
   @override
@@ -33,10 +39,10 @@ class Flagged extends Equatable implements Comparable<Flagged> {
 
   factory Flagged.fromEntity({required Map<String, dynamic> entity}) => Flagged(
       reportID: entity['report_id'] as int,
-      reason: FlaggedReason.fromString(entity['flagged_reason']));
+      reason: FlaggedReason.fromString(entity['reason']));
 
   Map<String, dynamic> toEntity() =>
-      {'report_id': reportID, 'flagged_reason': reason.toString()};
+      {'report_id': reportID, 'reason': reason.toEntity()};
 
   @override
   List<Object?> get props => [reportID, reason];

@@ -17,6 +17,10 @@ enum NotificationMethod implements Comparable<NotificationMethod> {
   // override toString and replace uses of ProblemCategory.name
   @override
   int compareTo(NotificationMethod other) => index.compareTo(other.index);
+
+  @override
+  toString() => name;
+  toEntity() => name;
 }
 
 class SubscriptionDTO {
@@ -43,13 +47,12 @@ class Subscription extends Equatable implements Comparable<Subscription> {
   factory Subscription.fromEntity(Map<String, dynamic> entity) => Subscription(
       userID: entity['user_id'] as String,
       reportID: entity['report_id'] as int,
-      notificationMethod:
-          NotificationMethod.fromString(entity['notification_method']));
+      notificationMethod: NotificationMethod.fromString(entity['method']));
 
   Map<String, dynamic> toEntity() => {
         'user_id': userID,
         'report_id': reportID,
-        'notification_method': notificationMethod.name
+        'method': notificationMethod.toEntity()
       };
 
   @override

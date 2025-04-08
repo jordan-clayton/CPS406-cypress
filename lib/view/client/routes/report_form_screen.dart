@@ -71,29 +71,34 @@ class _ReportFormScreenState extends State<ReportFormScreen> {
             appBar: adaptiveAppBar(title: 'New Report'),
             body: ListView(children: [
               // Category
-              DropdownMenu(
-                label: const Text('Category'),
-                initialSelection: _category,
-                onSelected: (ProblemCategory? newCat) {
-                  if (!mounted) {
-                    return;
-                  }
-                  setState(() {
-                    _category = newCat;
-                  });
-                },
-                dropdownMenuEntries: ProblemCategory.values
-                    .map((c) => DropdownMenuEntry(
-                        value: c,
-                        label: intl.toBeginningOfSentenceCase(c.name)))
-                    .toList(growable: false),
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: DropdownMenu(
+                  // This will expand the drop-down to fill all horizontal space.
+                  expandedInsets: EdgeInsets.zero,
+                  label: const Text('Category'),
+                  initialSelection: _category,
+                  onSelected: (ProblemCategory? newCat) {
+                    if (!mounted) {
+                      return;
+                    }
+                    setState(() {
+                      _category = newCat;
+                    });
+                  },
+                  dropdownMenuEntries: ProblemCategory.values
+                      .map((c) => DropdownMenuEntry(
+                          value: c,
+                          label: intl.toBeginningOfSentenceCase(c.name)))
+                      .toList(growable: false),
+                ),
               ),
               const Divider(),
               // Location
               ListTile(
                   leading: const Icon(Icons.location_history),
                   title: Text(
-                      'Lat: ${_location.latitude.toStringAsFixed(2)}, Long: ${_location.longitude.toStringAsFixed(2)}'),
+                      'Latitude: ${_location.latitude.toStringAsFixed(2)}, Longitude: ${_location.longitude.toStringAsFixed(2)}'),
                   subtitle: const Text('location'),
                   onTap: (loading)
                       ? null
@@ -121,91 +126,100 @@ class _ReportFormScreenState extends State<ReportFormScreen> {
                         }),
               const Divider(),
               // Description
-              TextField(
-                  controller: _descriptionController,
-                  // TODO: decide on whether we want to fix the number of characters
-                  // And how many characters that should be.
-                  maxLength: 1000,
-                  decoration: const InputDecoration(labelText: 'Description')),
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: TextField(
+                    controller: _descriptionController,
+                    // TODO: decide on whether we want to fix the number of characters
+                    // And how many characters that should be.
+                    maxLength: 1000,
+                    decoration: const InputDecoration(
+                        labelText: 'Description',
+                        border: OutlineInputBorder())),
+              ),
               const Divider(),
               // Submit
-              FilledButton.icon(
-                  onPressed: (!canSubmit || loading)
-                      ? null
-                      : () async {
-                          // Validate location.
-                          if (!insideToronto(
-                              _location.latitude, _location.longitude)) {
-                            WidgetsBinding.instance.addPostFrameCallback((_) {
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: FilledButton.icon(
+                    onPressed: (!canSubmit || loading)
+                        ? null
+                        : () async {
+                            // Validate location.
+                            if (!insideToronto(
+                                _location.latitude, _location.longitude)) {
+                              WidgetsBinding.instance.addPostFrameCallback((_) {
+                                if (!mounted) {
+                                  return;
+                                }
+
+                                const errorBar = SnackBar(
+                                    content:
+                                        Text('Location not inside Toronto'));
+                                ScaffoldMessenger.of(this.context)
+                                  ..clearSnackBars()
+                                  ..showSnackBar(errorBar);
+                              });
+                              return;
+                            }
+                            // Submit function.
+                            _loading.value = true;
+                            await widget.controller
+                                .makeReport(
+                                    newReport: Report(
+                                        id: 0,
+                                        category: _category!,
+                                        latitude: _location.latitude,
+                                        longitude: _location.longitude,
+                                        description: _description))
+                                .then((_) async {
                               if (!mounted) {
                                 return;
                               }
 
-                              const errorBar = SnackBar(
-                                  content: Text('Location not inside Toronto'));
-                              ScaffoldMessenger.of(this.context)
-                                ..clearSnackBars()
-                                ..showSnackBar(errorBar);
-                            });
-                            return;
-                          }
-                          // Submit function.
-                          _loading.value = true;
-                          await widget.controller
-                              .makeReport(
-                                  newReport: Report(
-                                      id: 0,
-                                      category: _category!,
-                                      latitude: _location.latitude,
-                                      longitude: _location.longitude,
-                                      description: _description))
-                              .then((_) async {
-                            if (!mounted) {
-                              return;
-                            }
+                              await showOkAlertDialog(
+                                  context: this.context,
+                                  title: 'Report Submitted',
+                                  message: 'Thank you for submitting a report. '
+                                      'The City of Toronto will get to fixing this as soon as possible.');
+                              if (!mounted) {
+                                return;
+                              }
+                              Navigator.pop(this.context);
+                              await Future.delayed(
+                                      const Duration(milliseconds: 200))
+                                  .then((_) {
+                                if (!mounted) {
+                                  return;
+                                }
 
-                            await showOkAlertDialog(
-                                context: this.context,
-                                title: 'Report Submitted',
-                                message: 'Thank you for submitting a report. '
-                                    'The City of Toronto will get to fixing this as soon as possible.');
-                            if (!mounted) {
-                              return;
-                            }
-                            Navigator.pop(this.context);
-                            await Future.delayed(
-                                    const Duration(milliseconds: 200))
-                                .then((_) {
+                                _loading.value = false;
+                              });
+                            }, onError: (e, s) {
                               if (!mounted) {
                                 return;
                               }
 
                               _loading.value = false;
-                            });
-                          }, onError: (e, s) {
-                            if (!mounted) {
-                              return;
-                            }
+                              WidgetsBinding.instance.addPostFrameCallback((_) {
+                                if (!mounted) {
+                                  return;
+                                }
 
-                            _loading.value = false;
-                            WidgetsBinding.instance.addPostFrameCallback((_) {
-                              if (!mounted) {
-                                return;
-                              }
-
-                              const errorBar = SnackBar(
-                                  content:
-                                      Text('Sorry! Error submitting report.'));
-                              ScaffoldMessenger.of(this.context)
-                                ..clearSnackBars()
-                                ..showSnackBar(errorBar);
+                                const errorBar = SnackBar(
+                                    content: Text(
+                                        'Sorry! Error submitting report.'));
+                                ScaffoldMessenger.of(this.context)
+                                  ..clearSnackBars()
+                                  ..showSnackBar(errorBar);
+                              });
                             });
-                          });
-                        },
-                  icon: (loading)
-                      ? const CircularProgressIndicator.adaptive()
-                      : const Icon(null),
-                  label: const Text('Submit')),
+                          },
+                    icon: (loading)
+                        ? const CircularProgressIndicator.adaptive()
+                        : const Icon(null),
+                    label: const Text('Submit')),
+              ),
             ]),
           );
         });

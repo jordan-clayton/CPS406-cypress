@@ -8,6 +8,7 @@ A real-time issue reporting and tracking system for the City of Toronto
 - Suchana Regmi: 501173160
 - Rizoan Azfar: 501237799
 - Suhaib Khan: 501112462
+- Dhan Payos 501248203
 
 ## Supported Platforms:
 
@@ -21,7 +22,11 @@ A real-time issue reporting and tracking system for the City of Toronto
 
 ### Implemented
 
+- GUI for users to view issues in real time on an intuitive map
+- Heuristics to automate flagging duplicate reports internally
+- Location-services to assist with geolocation during reporting
 - Database API for maintaining records of all tracked issues
+- Integration with a server backend
 - Reporting API for submitting new City issues to track
 - Subscription API to allow users to track report updates
 - User-led moderation API to allow users to flag duplicates and malicious reports
@@ -29,12 +34,8 @@ A real-time issue reporting and tracking system for the City of Toronto
 
 ### Roadmap
 
-- GUI for users to view issues in real time on an intuitive map
-- Location-services to assist with geolocation during reporting
-- Heuristics to automate flagging duplicate reports internally
-- GUI for internal City of Toronto use
-- Integration with a server backend
 - Test suite implementation and integration
+- GUI for internal City of Toronto use
 
 ## Building
 ### Dependencies:
@@ -44,6 +45,7 @@ A real-time issue reporting and tracking system for the City of Toronto
 web.**
 
 First, grab dependencies with:
+
 `flutter pub get`
 
 To run the client app (in debug mode), run the following command prompt:
@@ -61,6 +63,7 @@ To build the client executable in release mode, run the following:
 Wait for the project to compile and the final executable will be in build/release/your_platform/
 
 If you encounter issues building the project, try running:
+
 `flutter clean && flutter pub get`
 
 At this time, the internal application is not implemented. Instructions

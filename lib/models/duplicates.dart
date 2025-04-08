@@ -16,6 +16,10 @@ enum DuplicateSeverity implements Comparable<DuplicateSeverity> {
 
   @override
   int compareTo(DuplicateSeverity other) => index.compareTo(other.index);
+
+  @override
+  toString() => name;
+  toEntity() => name;
 }
 
 // Ignore the warning here, the primary key is immutable and what's used for
@@ -37,7 +41,7 @@ class DuplicateReport extends Equatable implements Comparable<DuplicateReport> {
   Map<String, dynamic> toEntity() => {
         'report_id': reportID,
         'match_id': matchID,
-        'DuplicateSeverity': severity.name
+        'severity': severity.toEntity()
       };
 
   @override

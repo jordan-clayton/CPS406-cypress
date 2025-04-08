@@ -17,6 +17,9 @@ enum ProblemCategory {
 
   // If we add more categories with complex string representations,
   // override toString and replace uses of ProblemCategory.name
+  @override
+  toString() => name;
+  toEntity() => name;
 }
 
 enum ProgressStatus {
@@ -30,6 +33,10 @@ enum ProgressStatus {
         'closed' => ProgressStatus.closed,
         _ => throw FormatException('Invalid progress format: $ps')
       };
+  @override
+  toString() => name;
+
+  toEntity() => (ProgressStatus.inProgress == this) ? 'in-progress' : name;
 }
 
 class Report extends Equatable implements Comparable<Report> {
@@ -62,12 +69,12 @@ class Report extends Equatable implements Comparable<Report> {
 
   // When updating, add the ID field to the entity.
   Map<String, dynamic> toEntity() => {
-        'category': category.name,
+        'category': category.toEntity(),
         'latitude': latitude,
         'longitude': longitude,
         'description': description,
         'verified': verified,
-        'progress': progress.name
+        'progress': progress.toEntity(),
       };
 
   Report copyWith(

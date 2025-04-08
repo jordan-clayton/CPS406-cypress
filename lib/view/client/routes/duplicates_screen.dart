@@ -3,13 +3,14 @@ import 'package:flutter/material.dart';
 import '../../../app/client/client_controller.dart';
 import '../../../models/report.dart';
 import '../../common/widgets/adaptive_appbar.dart';
-import '../../common/widgets/floating_menu_button.dart';
 import '../widgets/map_report_picker.dart';
 
 class DuplicatesPickerScreen extends StatefulWidget {
-  const DuplicatesPickerScreen({super.key, required this.controller});
+  const DuplicatesPickerScreen(
+      {super.key, required this.controller, required this.suspectedDup});
 
   final ClientController controller;
+  final Report suspectedDup;
 
   @override
   State<DuplicatesPickerScreen> createState() => _DuplicatesPickerScreenState();
@@ -26,7 +27,7 @@ class _DuplicatesPickerScreenState extends State<DuplicatesPickerScreen> {
   void initState() {
     super.initState();
     _loadReports = _getReports();
-    _loading = ValueNotifier(true);
+    _loading = ValueNotifier(false);
   }
 
   // Using a microtask here to bump the priority of the scheduler and run this
@@ -57,7 +58,7 @@ class _DuplicatesPickerScreenState extends State<DuplicatesPickerScreen> {
 
   @override
   Widget build(BuildContext context) => Scaffold(
-        appBar: adaptiveAppBar(title: 'Duplicates which report?'),
+        appBar: adaptiveAppBar(title: 'Select Duplicate Report'),
         body: FutureBuilder(
             future: _loadReports,
             builder: (context, snapshot) {
@@ -81,38 +82,18 @@ class _DuplicatesPickerScreenState extends State<DuplicatesPickerScreen> {
                     ..showSnackBar(errorBar);
                 });
               }
+              // Future TODO: query that filters out the single record.
               final List<Report> reports =
                   (done) ? snapshot.data ?? const [] : const [];
               return Stack(children: [
                 ReportPickerMap(
-                    reports: reports,
+                    reports:
+                        // Filter out the suspected report.
+                        reports.where((r) => r != widget.suspectedDup).toList(),
                     selectedID: _selectedReport,
                     initialLocation: widget.controller.clientLocation,
                     onLocationPicked: onLocationPicked,
                     onDismiss: onDismiss),
-                ValueListenableBuilder(
-                    valueListenable: _loading,
-                    builder: (context, loading, child) {
-                      return FloatingMenuButton(
-                        button: IconButton(
-                            icon: const Icon(Icons.arrow_back_rounded),
-                            onPressed: (loading)
-                                ? null
-                                : () async {
-                                    _loading.value = true;
-                                    Navigator.pop(this.context);
-                                    await Future.delayed(
-                                            const Duration(milliseconds: 200))
-                                        .then((_) {
-                                      if (!mounted) {
-                                        return;
-                                      }
-
-                                      _loading.value = false;
-                                    });
-                                  }),
-                      );
-                    }),
                 if (!done)
                   const Center(child: CircularProgressIndicator.adaptive())
               ]);
@@ -139,7 +120,7 @@ class _DuplicatesPickerScreenState extends State<DuplicatesPickerScreen> {
                       ? const CircularProgressIndicator.adaptive()
                       : (null != _selectedReport)
                           ? const Icon(Icons.check_rounded)
-                          : const Icon(Icons.arrow_back_rounded));
+                          : const Icon(Icons.cancel_outlined));
             }),
       );
 }
