@@ -11,6 +11,7 @@ import '../../../models/flagged.dart';
 import '../../../models/report.dart';
 import '../../common/widgets/adaptive_appbar.dart';
 import 'duplicates_screen.dart';
+import 'subscription_info_picker.dart';
 
 class ReportDetailScreen extends StatefulWidget {
   const ReportDetailScreen(
@@ -57,10 +58,53 @@ class _ReportDetailScreenState extends State<ReportDetailScreen>
                                 (apple)
                                     ? CupertinoPageRoute(
                                         builder: (context) =>
-                                            throw UnimplementedError())
+                                            SubscriptionInfoPickerScreen(
+                                                reportID: widget.report.id,
+                                                user: widget.controller.user))
                                     : MaterialPageRoute(
                                         builder: (context) =>
-                                            throw UnimplementedError()));
+                                            SubscriptionInfoPickerScreen(
+                                                reportID: widget.report.id,
+                                                user: widget.controller.user)));
+
+                            // If the user pops the context without submitting information
+                            // Assume they don't want to subscribe and repaint the screen.
+                            if (null == subscriptionDTO) {
+                              if (mounted) {
+                                _loading.value = false;
+                              }
+                              return;
+                            }
+
+                            // Otherwise, subscribe the user.
+                            await widget.controller
+                                .subscribe(info: subscriptionDTO)
+                                .then((_) {
+                              _loading.value = false;
+                              WidgetsBinding.instance.addPostFrameCallback((_) {
+                                if (!mounted) {
+                                  return;
+                                }
+                                const successBar =
+                                    SnackBar(content: Text('Subscribed!'));
+                                ScaffoldMessenger.of(this.context)
+                                  ..clearSnackBars()
+                                  ..showSnackBar(successBar);
+                              });
+                            }, onError: (e, s) {
+                              _loading.value = false;
+                              WidgetsBinding.instance.addPostFrameCallback((_) {
+                                if (!mounted) {
+                                  return;
+                                }
+                                const errorBar = SnackBar(
+                                    content:
+                                        Text('Sorry! Something went wrong.'));
+                                ScaffoldMessenger.of(this.context)
+                                  ..clearSnackBars()
+                                  ..showSnackBar(errorBar);
+                              });
+                            });
                           },
                     child: const Text("Subscribe to updates"));
               }),
@@ -196,17 +240,20 @@ class _ReportDetailScreenState extends State<ReportDetailScreen>
                       ? null
                       : () async {
                           if (widget.controller.loggedIn.value) {
-                            final apple = Platform.isMacOS || Platform.isIOS;
                             // Push to the duplicates picker.
+                            _loading.value = true;
                             final matchID = await Navigator.push(
                                 context,
                                 (apple)
                                     ? CupertinoPageRoute(
-                                        builder: (context) => DuplicatesScreen(
-                                            controller: widget.controller))
+                                        builder: (context) =>
+                                            DuplicatesPickerScreen(
+                                                controller: widget.controller))
                                     : MaterialPageRoute(
-                                        builder: (context) => DuplicatesScreen(
-                                            controller: widget.controller)));
+                                        builder: (context) =>
+                                            DuplicatesPickerScreen(
+                                                controller:
+                                                    widget.controller)));
 
                             if (null == matchID) {
                               _loading.value = false;
@@ -214,7 +261,6 @@ class _ReportDetailScreenState extends State<ReportDetailScreen>
                             }
 
                             // Flag the duplicate.
-                            _loading.value = true;
                             await widget.controller
                                 .reportDuplicate(
                                     suspectedDupID: widget.report.id,
