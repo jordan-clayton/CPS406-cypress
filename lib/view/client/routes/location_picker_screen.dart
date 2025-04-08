@@ -4,16 +4,16 @@ import 'package:latlong2/latlong.dart';
 import '../../common/widgets/floating_menu_button.dart';
 import '../widgets/map_location_picker.dart';
 
-class LocationPicker extends StatefulWidget {
-  const LocationPicker({super.key, this.initialLocation});
+class LocationPickerScreen extends StatefulWidget {
+  const LocationPickerScreen({super.key, this.initialLocation});
 
   final LatLng? initialLocation;
 
   @override
-  State<LocationPicker> createState() => _LocationPickerState();
+  State<LocationPickerScreen> createState() => _LocationPickerScreenState();
 }
 
-class _LocationPickerState extends State<LocationPicker> {
+class _LocationPickerScreenState extends State<LocationPickerScreen> {
   LatLng? _selectedLocation;
   LatLng? _mapCenter;
   double? _cameraZoom;

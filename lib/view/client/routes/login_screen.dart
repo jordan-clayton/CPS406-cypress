@@ -58,22 +58,30 @@ class _LoginFormScreenState extends State<LoginScreen> {
   }
 
   void _listenEmail() {
+    SemanticsService.announce(
+      'Email: ${_emailController.text}',
+      TextDirection.ltr,
+    );
+
+    if (!mounted) {
+      return;
+    }
     setState(() {
       _email = _emailController.text;
       _errorEmail = null;
     });
-    SemanticsService.announce(
-      'Email: $_email',
-      TextDirection.ltr,
-    );
   }
 
   void _listenPassword() {
+    SemanticsService.announce(
+        'Password: ${_passwordController.text}', TextDirection.ltr);
+    if (!mounted) {
+      return;
+    }
     setState(() {
       _password = _passwordController.text;
       _errorPassword = null;
     });
-    SemanticsService.announce('Password: $_password', TextDirection.ltr);
   }
 
   @override

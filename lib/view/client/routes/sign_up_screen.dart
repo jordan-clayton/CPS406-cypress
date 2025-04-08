@@ -66,33 +66,49 @@ class _SignUpScreenState extends State<SignUpScreen> {
   }
 
   void _listenEmail() {
+    SemanticsService.announce(
+        'Email: ${_emailController.text}', TextDirection.ltr);
+    if (!mounted) {
+      return;
+    }
     setState(() {
       _email = _emailController.text;
       _emailError = null;
     });
-    SemanticsService.announce('Email: $_email', TextDirection.ltr);
   }
 
   void _listenUsername() {
+    SemanticsService.announce(
+        'Username: ${_usernameController.text}', TextDirection.ltr);
+    if (!mounted) {
+      return;
+    }
     setState(() {
       _username = _usernameController.text;
     });
-    SemanticsService.announce('Username: $_username', TextDirection.ltr);
   }
 
   void _listenPhone() {
+    SemanticsService.announce(
+        'Phone: ${_phoneController.text}', TextDirection.ltr);
+    if (!mounted) {
+      return;
+    }
     setState(() {
       _phone = _phoneController.text;
       _phoneError = null;
     });
-    SemanticsService.announce('Phone: $_phone', TextDirection.ltr);
   }
 
   void _listenPassword() {
+    SemanticsService.announce(
+        'Password: ${_passwordController.text}', TextDirection.ltr);
+    if (!mounted) {
+      return;
+    }
     setState(() {
       _password = _passwordController.text;
     });
-    SemanticsService.announce('Password: $_password', TextDirection.ltr);
   }
 
   @override

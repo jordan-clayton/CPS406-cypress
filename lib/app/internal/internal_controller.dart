@@ -1,6 +1,7 @@
 import 'dart:developer';
 
 import 'package:collection/collection.dart';
+import 'package:flutter/foundation.dart';
 
 import '../../db/interface/db_service.dart';
 import '../../db/interface/query.dart';
@@ -86,7 +87,13 @@ class InternalController {
           retrieveUpdatedRecord: true,
           retrieveColumns: ['id']);
 
-      assert(response['id']! == report.id);
+      if (kDebugMode) {
+        assert(response['id']! == report.id, 'Failed to update user.');
+      } else {
+        if (response['id'] != report.id) {
+          throw Exception('Failed to update user.');
+        }
+      }
       // Update users.
       _notifySubscribers(report: report);
     } on Exception catch (e, s) {
@@ -112,7 +119,15 @@ class InternalController {
           retrieveUpdatedRecord: true,
           retrieveColumns: ['report_id']);
 
-      assert(response['report_id']! == reportID, 'failure to update duplicate');
+      // Assert is for debug mode only.
+      if (kDebugMode) {
+        assert(
+            response['report_id']! == reportID, 'failure to update duplicate');
+      } else {
+        if (response['report_id'] != reportID) {
+          throw Exception('Failure to update duplicate');
+        }
+      }
 
       // If it's a confirmed duplicate, close the report automatically
       if (severity == DuplicateSeverity.confirmed) {
@@ -125,7 +140,13 @@ class InternalController {
           retrieveUpdatedRecord: true,
         );
 
-        assert(response['id']! == reportID, 'failure to close report');
+        if (kDebugMode) {
+          assert(response['id']! == reportID, 'Failed to close report');
+        } else {
+          if (response['id'] != reportID) {
+            throw Exception('Failed to close report.');
+          }
+        }
 
         // Update subscribers
         _notifySubscribers(report: Report.fromEntity(response));
@@ -242,7 +263,14 @@ class InternalController {
         // This is not a robust check that the insertion went okay
         // If it proves insufficient enough to merit the performance hit,
         // reconstruct the objects and compare using Object equality.
-        assert(checkList.length == duplicates.length);
+        if (kDebugMode) {
+          assert(checkList.length == duplicates.length,
+              'Failed to properly insert duplicates.');
+        } else {
+          if (checkList.length != duplicates.length) {
+            throw Exception('Failed to properly insert duplicates.');
+          }
+        }
       }
     } on Exception catch (e, s) {
       _logError(exception: e, stacktrace: s);

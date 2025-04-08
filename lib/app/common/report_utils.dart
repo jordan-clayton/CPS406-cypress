@@ -1,11 +1,11 @@
 import 'dart:math';
 
-import 'package:cypress/app/common/utils.dart';
 import 'package:fuzzywuzzy/fuzzywuzzy.dart';
 import 'package:intl/intl.dart';
 
 import '../../models/report.dart';
 import 'constants.dart' as constants;
+import 'utils.dart';
 
 /// Collection of testable functions to integrate with a Controller class
 /// that's concerned with whether reports are duplicates or invalid

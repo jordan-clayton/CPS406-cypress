@@ -49,11 +49,14 @@ class _ReportFormScreenState extends State<ReportFormScreen> {
   }
 
   void _descriptionListen() {
+    SemanticsService.announce(
+        'Description: ${_descriptionController.text}', TextDirection.ltr);
+    if (!mounted) {
+      return;
+    }
     setState(() {
       _description = _descriptionController.text;
     });
-
-    SemanticsService.announce('Description: $_description', TextDirection.ltr);
   }
 
   @override
@@ -68,6 +71,7 @@ class _ReportFormScreenState extends State<ReportFormScreen> {
             body: ListView(children: [
               // Category
               DropdownMenu(
+                label: const Text('Category'),
                 initialSelection: _category,
                 onSelected: (ProblemCategory? newCat) {
                   if (!mounted) {
@@ -99,11 +103,13 @@ class _ReportFormScreenState extends State<ReportFormScreen> {
                               this.context,
                               (apple)
                                   ? CupertinoPageRoute(
-                                      builder: (context) => LocationPicker(
-                                          initialLocation: _location))
+                                      builder: (context) =>
+                                          LocationPickerScreen(
+                                              initialLocation: _location))
                                   : MaterialPageRoute(
-                                      builder: (context) => LocationPicker(
-                                          initialLocation: _location)));
+                                      builder: (context) =>
+                                          LocationPickerScreen(
+                                              initialLocation: _location)));
 
                           _location = newLoc ?? _location;
                           if (!mounted) {

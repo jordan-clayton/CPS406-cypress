@@ -6,16 +6,16 @@ import '../../common/widgets/adaptive_appbar.dart';
 import '../../common/widgets/floating_menu_button.dart';
 import '../widgets/map_report_picker.dart';
 
-class DuplicatesScreen extends StatefulWidget {
-  const DuplicatesScreen({super.key, required this.controller});
+class DuplicatesPickerScreen extends StatefulWidget {
+  const DuplicatesPickerScreen({super.key, required this.controller});
 
   final ClientController controller;
 
   @override
-  State<DuplicatesScreen> createState() => _DuplicatesScreenState();
+  State<DuplicatesPickerScreen> createState() => _DuplicatesPickerScreenState();
 }
 
-class _DuplicatesScreenState extends State<DuplicatesScreen> {
+class _DuplicatesPickerScreenState extends State<DuplicatesPickerScreen> {
   late Future<List<Report>> _loadReports;
   int? _selectedReport;
 
