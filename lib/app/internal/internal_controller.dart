@@ -310,7 +310,7 @@ class InternalController {
         table: 'subscribers',
         columns: [
           'notification_method',
-          'public.profiles(*)'
+          'profiles(*)'
         ],
         filters: [
           DatabaseFilter(column: 'report_id', operator: 'eq', value: report.id)
@@ -318,7 +318,7 @@ class InternalController {
 
     // Flatten the nested hashmap.
     final subscriberInfo = subscriberData.map((e) {
-      final sub = e['public.profiles'] ?? {};
+      final sub = e['profiles'] ?? {};
       return {
         'notification_method': e['notification_method'],
         'fcm_token': sub['fcm_token'],
