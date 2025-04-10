@@ -8,4 +8,6 @@ abstract interface class LoginService {
 
   Future<bool> logIn({required String email, required String password});
   Future<void> initialize();
+  
+  
 }

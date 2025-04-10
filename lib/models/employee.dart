@@ -1,3 +1,5 @@
+import 'dart:ffi';
+
 import 'package:equatable/equatable.dart';
 
 // NOTE: if we determine different levels with complex naming,
@@ -53,10 +55,24 @@ class Employee extends Equatable implements Comparable<Employee> {
         'authority': auth.toEntity()
       };
 
+  EmployeeView toView() => EmployeeView(this);
+
   @override
   get props => [uuid, employeeID];
 
   @override
   int compareTo(Employee other) =>
       uuid.compareTo(other.uuid) + employeeID.compareTo(other.employeeID);
+}
+
+// Immutable wrapper class for constant references
+class EmployeeView {
+  final Employee _employee;
+
+  EmployeeView(this._employee);
+  
+  String get firstName => _employee.firstName;
+  String get lastName => _employee.lastName;
+  int? get employeeID => _employee.employeeID;
+  Authority? get authority => _employee.auth;
 }
