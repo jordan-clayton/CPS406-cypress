@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import '../interface/notification_service.dart';
 
 // We might be able to implement this in time using mailer/gmail
@@ -7,8 +9,13 @@ class EmailNotificationServiceImpl implements EmailNotificationService {
       {required String message,
       List<Map<String, dynamic>>? clientInfo,
       dynamic payload}) {
-    // TODO: implement sendNotifications
-    throw UnimplementedError('EmailNotificationImpl not implemented');
+    // This is just a mock impl at the moment.
+    for (var client in (clientInfo ?? [])) {
+      if (null == client['email']) {
+        throw Exception('Client email missing!');
+      }
+      log('Sending email to client: ${client['email']!}');
+    }
   }
 }
 
@@ -19,8 +26,12 @@ class SmsNotificationServiceImpl implements SmsNotificationService {
       {required String message,
       List<Map<String, dynamic>>? clientInfo,
       dynamic payload}) {
-    // TODO: implement sendNotifications
-    throw UnimplementedError('SmsNotificationImpl not implemented');
+    for (var client in (clientInfo ?? [])) {
+      if (null == client['phone']) {
+        throw Exception('Phone number missing!');
+      }
+      log('Sending sms to client: ${client['phone']}');
+    }
   }
 }
 
@@ -32,7 +43,11 @@ class PushNotificationServiceImpl implements PushNotificationService {
       {required String message,
       List<Map<String, dynamic>>? clientInfo,
       dynamic payload}) {
-    // TODO: implement sendNotifications
-    throw UnimplementedError('PushNotificationImpl not implemented');
+    for (var client in (clientInfo ?? [])) {
+      if (null == client['fcm-token']) {
+        throw Exception('Client not set up for push notifications');
+      }
+      log('Sending push notification to client using token: ${client['fcm-token']}');
+    }
   }
 }
