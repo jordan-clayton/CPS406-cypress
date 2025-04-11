@@ -8,8 +8,8 @@ import 'package:os_detect/os_detect.dart' as os_detect;
 
 import '../../../app/internal/internal_controller.dart';
 import '../../common/widgets/floating_menu_button.dart';
-import 'login_screen.dart';
 import '../widgets/report_list.dart';
+import 'login_screen.dart';
 // import 'report_form_screen.dart';
 
 /// A basic scaffold containing the map, a floating action button to make reports
@@ -109,8 +109,8 @@ class _HomeScreenState extends State<HomeScreen>
       setState(() {});
     });
   }
-  
-  Future<void> _loadReports() async {   
+
+  Future<void> _loadReports() async {
     final reports = await widget.controller.getUnverified();
     setState(() {
       _reports = reports;
@@ -205,16 +205,17 @@ class _HomeScreenState extends State<HomeScreen>
                         }),
                 ]),
               ),
-              
               body: Stack(children: [
                 Positioned.fill(
-                  child: _reports.isEmpty 
-                  ? const Center(child: CircularProgressIndicator())
-                  :  ReportList(reports: _reports, controller: widget.controller,)
-                  ),
-                  
+                    child: _reports.isEmpty
+                        ? const Center(child: CircularProgressIndicator())
+                        : ReportList(
+                            reports: _reports,
+                            controller: widget.controller,
+                            // Pass the _loadReports function as a closure to the screen
+                            // On a successful DB update, force update the screen.
+                            onSuccessfulUpdate: _loadReports)),
                 const FloatingMenuButton(),
-                
               ]),
               floatingActionButton: ValueListenableBuilder(
                   valueListenable: _loading,
@@ -226,7 +227,7 @@ class _HomeScreenState extends State<HomeScreen>
                                 if (loggedIn) {
                                   // Route to Report filing page
                                   _loading.value = true;
-                                  
+
                                   await Future.delayed(
                                           const Duration(milliseconds: 200))
                                       .then((_) => _loading.value = false);

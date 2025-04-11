@@ -82,13 +82,13 @@ class InternalController {
 
   Future<void> updateReport({required Report report}) async {
     final entity = report.toEntity();
+    // Add the primary key to the mapping.
+    // Assume the database knows how to handle it.
+    entity['id'] = report.id;
     try {
       final response = await _databaseService.updateEntry(
           table: 'reports',
           entry: entity,
-          filters: [
-            DatabaseFilter(column: 'id', operator: 'eq', value: report.id)
-          ],
           retrieveUpdatedRecord: true,
           retrieveColumns: ['id']);
 
@@ -106,7 +106,6 @@ class InternalController {
       return Future.error(e, s);
     }
   }
-  
 
   /// Update the duplicates table with new severity.
   /// Intended use is for manual verification.
@@ -118,10 +117,8 @@ class InternalController {
     try {
       final response = await _databaseService.updateEntry(
           table: 'duplicates',
-          entry: {'severity': severity.name},
-          filters: [
-            DatabaseFilter(column: 'report_id', operator: 'eq', value: reportID)
-          ],
+          // Add the ID to the entry so that the DB service can locate the record.
+          entry: {'id': reportID, 'severity': severity.name},
           retrieveUpdatedRecord: true,
           retrieveColumns: ['report_id']);
 
@@ -139,10 +136,7 @@ class InternalController {
       if (severity == DuplicateSeverity.confirmed) {
         final response = await _databaseService.updateEntry(
           table: 'reports',
-          entry: {'progress': ProgressStatus.closed.name},
-          filters: [
-            DatabaseFilter(column: 'id', operator: 'eq', value: reportID)
-          ],
+          entry: {'id': reportID, 'progress': ProgressStatus.closed.name},
           retrieveUpdatedRecord: true,
         );
 
@@ -313,7 +307,7 @@ class InternalController {
     final message = report_utils.generateReportMessage(r: report);
     // Get the list of subscribers.
     final subscriberData = await _databaseService.getEntries(
-        table: 'subscribers',
+        table: 'subscriptions',
         columns: [
           'notification_method',
           'profiles(*)'
@@ -379,8 +373,7 @@ class InternalController {
       return Future.error(e, s);
     }
   }
-  
-  
+
   Future<void> signOut() async {
     log('Signing out.');
     try {
@@ -392,7 +385,7 @@ class InternalController {
       return Future.error(e, s);
     }
   }
-  
+
   Future<void> _getEmployeeData() async {
     final employeeData = await _databaseService
         .getEntry(table: 'employees', filters: [

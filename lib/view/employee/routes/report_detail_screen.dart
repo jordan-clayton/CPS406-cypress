@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:adaptive_dialog/adaptive_dialog.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:os_detect/os_detect.dart' as os_detect;
@@ -34,7 +33,7 @@ class _ReportDetailScreenState extends State<ReportDetailScreen>
     super.initState();
     _loading = ValueNotifier(false);
   }
-  
+
   @override
   Widget build(BuildContext context) {
     final apple = os_detect.isMacOS || os_detect.isIOS;
@@ -52,12 +51,34 @@ class _ReportDetailScreenState extends State<ReportDetailScreen>
                 leading: const Icon(Icons.warning_amber_rounded),
                 title: const Text('Unverified'),
                 onTap: () async {
-                  widget.controller.updateReport(report: widget.report.copyWith(verified: true));
+                  // Send the update request, on success it'll pop back to the listview.
+                  await widget.controller
+                      .updateReport(
+                          report: widget.report.copyWith(verified: true))
+                      .then((_) {
+                    if (mounted) {
+                      Navigator.pop(this.context, true);
+                    }
+                  }, onError: (_) {
+                    if (!mounted) {
+                      return;
+                    }
+                    WidgetsBinding.instance.addPostFrameCallback((_) {
+                      if (!mounted) {
+                        return;
+                      }
+                      const errorBar = SnackBar(
+                          content: Text('Sorry! Failed to update report.'));
+                      ScaffoldMessenger.of(context)
+                        ..clearSnackBars()
+                        ..showSnackBar(errorBar);
+                    });
+                  });
                 },
                 subtitle: const Text('Verification status'),
                 tileColor: Theme.of(context).colorScheme.error),
         const Divider(),
-        
+
         const Divider(),
         // Progress status
         switch (widget.report.progress) {
@@ -116,46 +137,49 @@ class _ReportDetailScreenState extends State<ReportDetailScreen>
                                 _loading.value = false;
                                 return;
                               }
-                              
+
                               // Flag the report
                               _loading.value = true;
-                              ((_) async {
-                                if (!mounted) {
-                                  return;
-                                }
-                                await showOkAlertDialog(
-                                    context: this.context,
-                                    title: 'Report flagged',
-                                    message: 'Thanks for your help!');
-
-                                if (!mounted) {
-                                  return;
-                                }
-
-                                Navigator.pop(this.context);
-                                await Future.delayed(
-                                        const Duration(milliseconds: 200))
-                                    .then((_) {
+                              (
+                                (_) async {
                                   if (!mounted) {
                                     return;
                                   }
+                                  await showOkAlertDialog(
+                                      context: this.context,
+                                      title: 'Report flagged',
+                                      message: 'Thanks for your help!');
+
+                                  if (!mounted) {
+                                    return;
+                                  }
+
+                                  Navigator.pop(this.context);
+                                  await Future.delayed(
+                                          const Duration(milliseconds: 200))
+                                      .then((_) {
+                                    if (!mounted) {
+                                      return;
+                                    }
+                                    _loading.value = false;
+                                  });
+                                },
+                                onError: (e, s) {
                                   _loading.value = false;
-                                });
-                              }, onError: (e, s) {
-                                _loading.value = false;
-                                WidgetsBinding.instance
-                                    .addPostFrameCallback((_) {
-                                  if (!mounted) {
-                                    return;
-                                  }
-                                  const errorBar = SnackBar(
-                                      content:
-                                          Text('Sorry, an error occurred'));
-                                  ScaffoldMessenger.of(this.context)
-                                    ..clearSnackBars()
-                                    ..showSnackBar(errorBar);
-                                });
-                              });
+                                  WidgetsBinding.instance
+                                      .addPostFrameCallback((_) {
+                                    if (!mounted) {
+                                      return;
+                                    }
+                                    const errorBar = SnackBar(
+                                        content:
+                                            Text('Sorry, an error occurred'));
+                                    ScaffoldMessenger.of(this.context)
+                                      ..clearSnackBars()
+                                      ..showSnackBar(errorBar);
+                                  });
+                                }
+                              );
                             } else {
                               // Show an alert dialog that pops.
                               // Future feature: push to sign-in screen
@@ -170,7 +194,6 @@ class _ReportDetailScreenState extends State<ReportDetailScreen>
               );
             }),
         const Padding(padding: EdgeInsets.symmetric(vertical: 8.0)),
-    
       ]),
     );
   }

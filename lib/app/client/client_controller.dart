@@ -96,13 +96,14 @@ class ClientController {
     log('Updating user.');
     try {
       final entity = user.toEntity();
+      entity['id'] = user.id;
+
+      // Let the database service handle the id field.
       final response = await _databaseService.updateEntry(
-          table: 'public.profiles',
-          entry: entity,
-          retrieveUpdatedRecord: true,
-          filters: [
-            DatabaseFilter(column: 'id', operator: 'eq', value: user.id)
-          ]);
+        table: 'public.profiles',
+        entry: entity,
+        retrieveUpdatedRecord: true,
+      );
 
       if (kDebugMode) {
         assert(response['id'] == user.id, 'Failed to update user.');

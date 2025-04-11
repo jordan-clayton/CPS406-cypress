@@ -3,13 +3,8 @@ import 'package:flutter/material.dart';
 import 'app/common/loading.dart';
 import 'view/employee/employee_application.dart';
 
-/// Let this be the 'client application for end users'
-/// Define a separate main for the internal 'employee application'
-/// 
-/// 
-/// definitely needs to be checked
+/// Let this be the 'internal application for employees'
 void main() {
   runApp(EmployeeApplication(
-    initializeController: initializeInternalControllerWithSupabase() 
-  ));
+      initializeController: initializeInternalControllerWithSupabase()));
 }

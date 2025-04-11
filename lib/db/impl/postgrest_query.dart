@@ -87,7 +87,8 @@ class PostgrestDatabaseQuery implements DatabaseQuery {
   @override
   PostgrestDatabaseQuery update(
       {required List<Map<String, dynamic>> entities}) {
-    _filterBuilder = _queryBuilder.upsert(entities);
+    // TODO: handle primary key issue.
+    _filterBuilder = _queryBuilder.upsert(entities, ignoreDuplicates: false);
     _ready = true;
     _modifyQuery = true;
     return this;
