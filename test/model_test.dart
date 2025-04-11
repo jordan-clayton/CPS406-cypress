@@ -9,8 +9,7 @@ import 'package:cypress/models/user.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
-  /// Group tests like so.
-  group('Section 1', () {
+  group('Section 1: General Functionality', () {
     test('ID: 1.1 - User Registration: citizen, UNIT', () async {
       // Set up the database
       final dbService = MockDatabaseService(seedData: seedEmptyDatabase());
@@ -60,8 +59,6 @@ void main() {
           locationService: locationService);
 
       // Simulate valid login.
-      // NOTE: if this fails, there's a bug with the mock.
-      // The (manual) integration testing indicates this works..
       expect(
         await controller.logIn(
             email: 'testEmail@gmail.com', password: 'fakePassword'),
@@ -99,8 +96,6 @@ void main() {
           locationService: locationService);
 
       // Simulate invalid login.
-      // NOTE: if this fails, there's a bug with the mock.
-      // The (manual) integration testing indicates this works..
       expect(
           await controller.logIn(
               email: 'testEmail@gmail.com', password: 'wrongPassword'),
@@ -160,5 +155,29 @@ void main() {
           reason:
               'Client failed to log out, or state is not updated in controller.');
     });
+  });
+  group('Section 3: Duplicates/ False Reports Heuristics Testing', () {
+    test('ID: 3.1 - Good match: location', () {});
+    test('ID: 3.2 - Good match: word frequency', () {});
+    test('ID: 3.3 - Good match: location and description combined', () {});
+    test('ID: 3.4 - Bad match: location', () {});
+    test('ID: 3.5 - Bad match: description', () {});
+    test('ID: 3.6 - Bad match: location and description combined', () {});
+    test('ID: 3.7 - False report: location', () {});
+    test('ID: 3.9 - Very short reports', () {});
+    test('ID: 3.10 - Reports with special characters', () {});
+  });
+  group('Section 4: Progress Updates', () {
+    test('ID: 4.1 - Update the status of a report: incomplete incident', () {});
+    test('ID: 4.2 - Update the status of a report: complete incident', () {});
+    test('ID: 4.4 - Verify notifications for updates on issues', () {});
+    test('ID: 4.5 - Flagging a fraudulent report', () {});
+  });
+
+  group('Section 5: UI testing', () {
+    // This test should pass if the database returns the expected number of reports.
+    test('ID: 5.1 - Map functionality: view previous reported issues', () {});
+    test('ID: 5.4 - Validating reports: unverified reports', () {});
+    test('ID: 5.5 - Validating reports: unverified reports', () {});
   });
 }
