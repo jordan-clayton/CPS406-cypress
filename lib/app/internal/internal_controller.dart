@@ -290,7 +290,7 @@ class InternalController {
         DatabaseFilter(
             column: 'progress',
             operator: 'eq',
-            value: ProgressStatus.closed.name)
+            value: ProgressStatus.closed.toEntity())
       ]);
       return data.map((e) => Report.fromEntity(e)).toList(growable: false);
     } on Exception catch (e, s) {

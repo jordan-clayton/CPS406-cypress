@@ -140,7 +140,14 @@ class MockDatabaseService implements DatabaseService {
         return true;
       }
       return filters.fold(
-          true, (acc, filter) => acc && (filter.value == entry[filter.column]));
+          true,
+          (acc, filter) =>
+              acc &&
+              // Most tests we need only use equality.
+              // If this becomes a problem, create an appropriate function table.
+              ((filter.operator == 'eq')
+                  ? filter.value == entry[filter.column]
+                  : filter.value != entry[filter.column]));
     });
 
     for (var o in (order ?? [])) {
@@ -221,14 +228,17 @@ class MockDatabaseService implements DatabaseService {
         List.empty(growable: true);
     // For each update-able entry, 'update it'
     for (var entry in entries) {
-      dbTable.map((existingEntry) {
-        if (filterFunction(existingEntry, entry)) {
-          // This will overwrite the data.
-          existingEntry.addAll(entry);
-          // Copy it to the modified entries record.
-          modifiedEntries.add(existingEntry);
+      for (var existingEntry in dbTable) {
+        if (!filterFunction(existingEntry, entry)) {
+          continue;
         }
-      });
+        // Matches the filter, so update accordingly.
+
+        // This will overwrite the data.
+        existingEntry.addAll(entry);
+        // Copy it to the modified entries record.
+        modifiedEntries.add(existingEntry);
+      }
     }
 
     if (!retrieveUpdatedRecords) {

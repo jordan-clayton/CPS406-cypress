@@ -5,12 +5,16 @@ import 'package:cypress/app/common/constants.dart' as constants;
 import 'package:cypress/app/common/report_utils.dart';
 import 'package:cypress/app/common/utils.dart';
 import 'package:cypress/app/common/validation.dart';
+import 'package:cypress/app/internal/internal_controller.dart';
 import 'package:cypress/db/test/test_db_service.dart';
 import 'package:cypress/db/test/test_db_utils.dart';
 import 'package:cypress/location/test/fallback_location_service.dart';
 import 'package:cypress/login/test/test_login_service.dart';
+import 'package:cypress/models/employee.dart';
 import 'package:cypress/models/report.dart';
 import 'package:cypress/models/user.dart';
+import 'package:cypress/notification/impl/internal_notification_service.dart';
+import 'package:cypress/notification/impl/notification_service_impl.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:latlong2/latlong.dart';
 
@@ -405,8 +409,178 @@ void main() {
     });
   });
   group('Section 4-Progress Updates', () {
-    test('ID_4.1 - Update the status of a report-incomplete incident', () {});
-    test('ID_4.2 - Update the status of a report-complete incident', () {});
+    test('ID_4.1 - Update the status of a report-incomplete incident',
+        () async {
+      // Set up the database with an unverified report and user
+      const mockReport = Report(
+        id: 0,
+        category: ProblemCategory.crime,
+        latitude: constants.torontoLat,
+        longitude: constants.torontoLong,
+        description: 'A terrible crime has occured, methinks',
+      );
+      final seedUser = User(id: '', email: 'testEmail@gmail.com');
+      var db = seedDatabaseWithProfiles(
+          userProfiles: [seedUser],
+          startingDatabase: seedDatabaseWithReports(reports: [mockReport]));
+      // Get the userID.
+      final userID = db['profiles']!.first['id'];
+      // Seed an employee entry
+      final employee = Employee(uuid: userID, employeeID: 0);
+
+      db = seedDatabaseWithEmployees(
+          employeeProfiles: [employee], startingDatabase: db);
+
+      final dbService = MockDatabaseService(seedData: db);
+      final loginService = MockLoginService.withMockedCredentials(
+        fakeClientEmail: seedUser.email,
+        fakeClientPassword: 'fakePassword',
+        fakeUserID: userID,
+      );
+
+      final notificationService = InternalNotifcationService(
+          sms: SmsNotificationServiceImpl(),
+          email: EmailNotificationServiceImpl(),
+          push: PushNotificationServiceImpl());
+
+      final controller = InternalController(
+          databaseService: dbService,
+          loginService: loginService,
+          notificationService: notificationService);
+
+      // Ensure login works.
+      expect(
+          await controller.logIn(
+              email: 'testEmail@gmail.com', password: 'fakePassword'),
+          true,
+          reason: 'Failed to log employee in');
+      expect(controller.loggedIn.value, true,
+          reason: 'Failed to log in employee');
+
+      // Get the unverified report.
+      final returnedUnverifiedReports = await controller.getUnverified();
+      final reportToUpdate = returnedUnverifiedReports.first;
+      expect(returnedUnverifiedReports.length, 1,
+          reason: 'Failed to retrieve the report');
+
+      // Simulate verifying a report.
+      // First check that the copyWith method works.
+      final testCopyWith = reportToUpdate.copyWith(
+          verified: true, progress: ProgressStatus.inProgress);
+      expect(testCopyWith.verified, true,
+          reason: 'Copywith failure when setting verified');
+      expect(ProgressStatus.inProgress == testCopyWith.progress, true,
+          reason: 'Copywith failure when setting progress');
+      // Then run the update.
+      await controller.updateReport(
+          report: reportToUpdate.copyWith(
+              verified: true, progress: ProgressStatus.inProgress));
+
+      // Check that the verified report is no longer returned
+      final updatedUnverifiedReports = await controller.getUnverified();
+      expect(updatedUnverifiedReports.isEmpty, true,
+          reason: 'Unverified report has not been updated.');
+      // Check that the verified report is open
+      final openedVerifiedReports = await controller.getVerifiedOpenedReports();
+      expect(openedVerifiedReports['in-progress']!.length, 1,
+          reason: 'Verified in-progress report is not in the database');
+
+      // Make a report from the data and compare that it's the same report.
+      final updatedReport = openedVerifiedReports['in-progress']!.first;
+      expect(updatedReport == reportToUpdate, true,
+          reason: 'Report data not properly updated');
+      expect(ProgressStatus.inProgress == updatedReport.progress, true,
+          reason: 'Report progress data failed to update');
+      expect(updatedReport.verified, true,
+          reason: 'Report verified data failed to update');
+    });
+    test('ID_4.2 - Update the status of a report-complete incident', () async {
+      // Set up the database with an in-progress report and user
+      const mockReport = Report(
+          id: 0,
+          category: ProblemCategory.crime,
+          latitude: constants.torontoLat,
+          longitude: constants.torontoLong,
+          description: 'A terrible crime has occured, methinks',
+          verified: true,
+          progress: ProgressStatus.inProgress);
+      final seedUser = User(id: '', email: 'testEmail@gmail.com');
+      var db = seedDatabaseWithProfiles(
+          userProfiles: [seedUser],
+          startingDatabase: seedDatabaseWithReports(reports: [mockReport]));
+      // Get the userID.
+      final userID = db['profiles']!.first['id'];
+      // Seed an employee entry
+      final employee = Employee(uuid: userID, employeeID: 0);
+
+      db = seedDatabaseWithEmployees(
+          employeeProfiles: [employee], startingDatabase: db);
+
+      final dbService = MockDatabaseService(seedData: db);
+      final loginService = MockLoginService.withMockedCredentials(
+        fakeClientEmail: seedUser.email,
+        fakeClientPassword: 'fakePassword',
+        fakeUserID: userID,
+      );
+
+      final notificationService = InternalNotifcationService(
+          sms: SmsNotificationServiceImpl(),
+          email: EmailNotificationServiceImpl(),
+          push: PushNotificationServiceImpl());
+
+      final controller = InternalController(
+          databaseService: dbService,
+          loginService: loginService,
+          notificationService: notificationService);
+
+      // Ensure login works.
+      expect(
+          await controller.logIn(
+              email: 'testEmail@gmail.com', password: 'fakePassword'),
+          true,
+          reason: 'Failed to log employee in');
+      expect(controller.loggedIn.value, true,
+          reason: 'Failed to log in employee');
+
+      // Check that the verified report is in-progress
+      final openedVerifiedReports = await controller.getVerifiedOpenedReports();
+      expect(openedVerifiedReports['in-progress']!.length, 1,
+          reason: 'Verified in-progress report is not in the database');
+
+      // Update the report to closed.
+      final updatedReport = openedVerifiedReports['in-progress']!.first;
+      // Ensure copywith works
+      final testCopyWith =
+          updatedReport.copyWith(progress: ProgressStatus.closed);
+      expect(ProgressStatus.closed == testCopyWith.progress, true,
+          reason: 'Copywith failure with ProgressStatus.closed');
+
+      await controller.updateReport(
+          report: updatedReport.copyWith(progress: ProgressStatus.closed));
+
+      // Test that the report does not appear in the opened reports query
+      final openedReports = await controller.getVerifiedOpenedReports();
+      expect(openedReports['in-progress']!.isEmpty, true,
+          reason: 'Report was not updated to closed and is set to in-progress');
+      expect(openedReports['opened']!.isEmpty, true,
+          reason: 'Report was not updated to closed and is set to open');
+
+      // Test that the report DOES appear in the closed reports query
+      final closedReports = await controller.getClosed();
+      expect(closedReports.isNotEmpty, true,
+          reason: 'Failed to update report to close');
+      expect(closedReports.length, 1,
+          reason:
+              'Closed reports length is greater than 1: ${closedReports.length}');
+
+      final checkReport = closedReports.first;
+      expect(checkReport.progress, ProgressStatus.closed,
+          reason:
+              'Failed to update report progress to closed: ${checkReport.progress.toString()}');
+      expect(checkReport == updatedReport, true,
+          reason:
+              'Report mismatch. Received: ${checkReport.id}, Expected: ${updatedReport.id}');
+    });
     test('ID_4.4 - Verify notifications for updates on issues', () {});
     test('ID_4.5 - Flagging a fraudulent report', () {});
   });
