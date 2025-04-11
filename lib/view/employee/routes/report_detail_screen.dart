@@ -34,7 +34,7 @@ class _ReportDetailScreenState extends State<ReportDetailScreen>
     super.initState();
     _loading = ValueNotifier(false);
   }
-
+  
   @override
   Widget build(BuildContext context) {
     final apple = os_detect.isMacOS || os_detect.isIOS;
@@ -51,6 +51,9 @@ class _ReportDetailScreenState extends State<ReportDetailScreen>
             : ListTile(
                 leading: const Icon(Icons.warning_amber_rounded),
                 title: const Text('Unverified'),
+                onTap: () async {
+                  widget.controller.updateReport(report: widget.report.copyWith(verified: true));
+                },
                 subtitle: const Text('Verification status'),
                 tileColor: Theme.of(context).colorScheme.error),
         const Divider(),

@@ -104,6 +104,7 @@ class InternalController {
       return Future.error(e, s);
     }
   }
+  
 
   /// Update the duplicates table with new severity.
   /// Intended use is for manual verification.
