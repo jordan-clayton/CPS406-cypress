@@ -79,11 +79,13 @@ class InternalController {
 
   Future<void> updateReport({required Report report}) async {
     final entity = report.toEntity();
-    entity['id'] = report.id;
     try {
       final response = await _databaseService.updateEntry(
           table: 'reports',
           entry: entity,
+          filters: [
+            DatabaseFilter(column: 'id', operator: 'eq', value: report.id)
+          ],
           retrieveUpdatedRecord: true,
           retrieveColumns: ['id']);
 
