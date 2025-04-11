@@ -1,15 +1,16 @@
 import 'dart:async';
 
 import 'package:adaptive_dialog/adaptive_dialog.dart';
+import 'package:cypress/models/report.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:os_detect/os_detect.dart' as os_detect;
 
-import '../../../app/client/employee_controller.dart';
+import '../../../app/internal/internal_controller.dart';
 import '../../common/widgets/floating_menu_button.dart';
-import '../widgets/map_report_viewer.dart';
 import 'login_screen.dart';
-import 'report_form_screen.dart';
+import '../widgets/report_list.dart';
+// import 'report_form_screen.dart';
 
 /// A basic scaffold containing the map, a floating action button to make reports
 /// If the client is not registered/logged in, push to the sign in/log in screen
@@ -20,7 +21,7 @@ class HomeScreen extends StatefulWidget {
   const HomeScreen(
       {super.key, required this.controller, required this.routeObserver});
 
-  final EmployeeController controller;
+  final InternalController controller;
   final RouteObserver<ModalRoute<void>> routeObserver;
 
   @override
@@ -30,13 +31,17 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen>
     with WidgetsBindingObserver, RouteAware {
   late ValueNotifier<bool> _loading;
+  List<Report> _reports = [];
+  late ScrollController _scrollController;
   late Timer _queryTimer;
   late bool _isVisible;
 
   @override
   initState() {
     super.initState();
+    _scrollController = ScrollController();
     _resetQueryTimer();
+    _loadReports();
     _isVisible = true;
     _loading = ValueNotifier(false);
   }
@@ -102,7 +107,15 @@ class _HomeScreenState extends State<HomeScreen>
       if (!_isVisible) {
         return;
       }
+      _loadReports();
       setState(() {});
+    });
+  }
+  
+  Future<void> _loadReports() async {   
+    final reports = await widget.controller.getUnverified();
+    setState(() {
+      _reports = reports;
     });
   }
 
@@ -194,25 +207,16 @@ class _HomeScreenState extends State<HomeScreen>
                         }),
                 ]),
               ),
+              
               body: Stack(children: [
-                ReportViewerMap(
-                    controller: widget.controller,
-                    handleError: () {
-                      WidgetsBinding.instance.addPostFrameCallback((_) {
-                        if (!mounted) {
-                          return;
-                        }
-                        final errorBar = SnackBar(
-                          content: const Text('Error retrieving new reports.'),
-                          action: SnackBarAction(
-                              label: 'Retry?',
-                              onPressed: () => setState(() {})),
-                        );
-                        ScaffoldMessenger.of(this.context)
-                            .showSnackBar(errorBar);
-                      });
-                    }),
+                Positioned.fill(
+                  child: _reports.isEmpty 
+                  ? const Center(child: CircularProgressIndicator())
+                  :  ReportList(reports: _reports)
+                  ),
+                  
                 const FloatingMenuButton(),
+                
               ]),
               floatingActionButton: ValueListenableBuilder(
                   valueListenable: _loading,
@@ -224,19 +228,7 @@ class _HomeScreenState extends State<HomeScreen>
                                 if (loggedIn) {
                                   // Route to Report filing page
                                   _loading.value = true;
-                                  await Navigator.push(
-                                      this.context,
-                                      (apple)
-                                          ? CupertinoPageRoute(
-                                              builder: (context) =>
-                                                  ReportFormScreen(
-                                                      controller:
-                                                          widget.controller))
-                                          : MaterialPageRoute(
-                                              builder: (context) =>
-                                                  ReportFormScreen(
-                                                      controller:
-                                                          widget.controller)));
+                                  
                                   await Future.delayed(
                                           const Duration(milliseconds: 200))
                                       .then((_) => _loading.value = false);

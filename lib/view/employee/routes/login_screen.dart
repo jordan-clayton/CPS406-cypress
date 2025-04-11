@@ -4,15 +4,15 @@ import 'package:flutter/semantics.dart';
 import 'package:os_detect/os_detect.dart' as os_detect;
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-import '../../../app/client/employee_controller.dart';
+import '../../../app/internal/internal_controller.dart';
 import '../../../app/common/validation.dart';
 import '../../common/widgets/adaptive_appbar.dart';
-import 'sign_up_screen.dart';
+
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key, required this.controller});
 
-  final EmployeeController controller;
+  final InternalController controller;
 
   @override
   State<LoginScreen> createState() => _LoginFormScreenState();
@@ -171,7 +171,7 @@ class _LoginFormScreenState extends State<LoginScreen> {
                             _loading.value = true;
                             // Log in
                             await widget.controller
-                                .logIn(employeeID: _email, password: _password)
+                                .logIn(email: _email, password: _password)
                                 .then((loggedIn) async {
                               if (loggedIn) {
                                 if (!context.mounted) {
@@ -223,37 +223,7 @@ class _LoginFormScreenState extends State<LoginScreen> {
               );
             }),
         // Button to sign up
-        ValueListenableBuilder(
-            valueListenable: _loading,
-            builder: (context, signUpPressed, child) {
-              return Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: FilledButton.tonal(
-                    onPressed: (signUpPressed)
-                        ? null
-                        : () async {
-                            _loading.value = true;
-                            await Navigator.pushReplacement(
-                                    context,
-                                    (apple)
-                                        ? CupertinoPageRoute(
-                                            builder: (context) => SignUpScreen(
-                                                controller: widget.controller),
-                                          )
-                                        : MaterialPageRoute(
-                                            builder: (context) => SignUpScreen(
-                                                controller: widget.controller)))
-                                .then((_) {
-                              if (!mounted) {
-                                return;
-                              }
-
-                              _loading.value = false;
-                            });
-                          },
-                    child: const Text('Sign up')),
-              );
-            }),
+        
       ]),
     );
   }

@@ -2,7 +2,7 @@ import 'dart:developer';
 
 import 'package:flutter/material.dart';
 
-import '../../app/client/employee_controller.dart';
+import '../../app/internal/internal_controller.dart';
 import '../common/routes/error_screen.dart';
 import '../common/routes/loading_screen.dart';
 import 'routes/home_screen.dart';
@@ -11,14 +11,14 @@ import 'routes/home_screen.dart';
 class EmployeeApplication extends StatefulWidget {
   const EmployeeApplication({super.key, required this.initializeController});
 
-  final Future<EmployeeController> initializeController;
+  final Future<InternalController> initializeController;
 
   @override
   State<EmployeeApplication> createState() => _EmployeeApplicationState();
 }
 
 class _EmployeeApplicationState extends State<EmployeeApplication> {
-  late Future<EmployeeController> _initController;
+  late Future<InternalController> _initController;
   // This needs to persist across rebuilds.
   late final RouteObserver<ModalRoute<void>> _routeObserver;
   @override

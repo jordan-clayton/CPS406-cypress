@@ -1,5 +1,8 @@
 import 'dart:developer';
 
+import 'package:cypress/app/internal/internal_controller.dart';
+import 'package:cypress/notification/impl/internal_notification_service.dart';
+import 'package:cypress/notification/impl/notification_service_impl.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../db/impl/postgrest_db_service.dart';
@@ -44,5 +47,33 @@ Future<ClientController> initializeControllerWithSupabase() async {
   } catch (e, s) {
     log(e.toString(), stackTrace: s);
   }
+  return controller;
+}
+
+Future<InternalController> initializeInternalControllerWithSupabase() async {
+  // Initialize clients
+  SupabaseClient? supabase;
+
+  // There is no field I can check and .initialize throws when called twice.
+  // This has to be in a try block :<
+  try {
+    await Supabase.initialize(
+        url: constants.supabaseURL, anonKey: constants.supabaseAnonKey);
+    supabase = Supabase.instance.client;
+  } catch (e) {
+    supabase = SupabaseClient(constants.supabaseURL, constants.supabaseAnonKey);
+  }
+
+  final dbClient = SupabaseImpl.withClient(client: supabase);
+  final loginService = SupabaseLoginService.withClient(client: supabase);
+  final notificationService = InternalNotifcationService(sms: SmsNotificationServiceImpl(), email: EmailNotificationServiceImpl(), push: PushNotificationServiceImpl());
+  final dbService = PostgrestDatabaseService(client: dbClient);
+  
+  final controller = InternalController(
+      databaseService: dbService,
+      loginService: loginService,
+      loggedIn: loginService.hasSession, 
+      notificationService: notificationService);
+
   return controller;
 }

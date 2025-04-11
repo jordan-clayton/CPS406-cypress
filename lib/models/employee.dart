@@ -1,4 +1,4 @@
-import 'dart:ffi';
+// import 'dart:ffi';
 
 import 'package:equatable/equatable.dart';
 
@@ -29,7 +29,7 @@ class Employee extends Equatable implements Comparable<Employee> {
 
   // This field predicates on the assumption that the city of toronto uses
   // numbers for employee id numbers
-  final int employeeID;
+  int employeeID;
   Authority auth;
 
   Employee(

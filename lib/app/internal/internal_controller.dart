@@ -18,16 +18,19 @@ class InternalController {
   NotificationService _notificationService;
   LoginService _loginService;
   Employee? _employee;
+  ValueNotifier<bool> loggedIn;
 
   InternalController(
       {required DatabaseService databaseService,
       required LoginService loginService,
       required NotificationService notificationService,
-      Employee? employee})
+      Employee? employee,
+      bool loggedIn = false})
       : _databaseService = databaseService,
         _notificationService = notificationService,
         _loginService = loginService,
-        _employee = employee;
+        _employee = employee,
+        loggedIn = ValueNotifier(loggedIn);
 
   void databaseService(newService) => {_databaseService = newService};
   void notificationService(newService) => {_notificationService = newService};
@@ -310,7 +313,7 @@ class InternalController {
         table: 'subscribers',
         columns: [
           'notification_method',
-          'public.profiles(*)'
+          'profiles(*)'
         ],
         filters: [
           DatabaseFilter(column: 'report_id', operator: 'eq', value: report.id)
@@ -318,7 +321,7 @@ class InternalController {
 
     // Flatten the nested hashmap.
     final subscriberInfo = subscriberData.map((e) {
-      final sub = e['public.profiles'] ?? {};
+      final sub = e['profiles'] ?? {};
       return {
         'notification_method': e['notification_method'],
         'fcm_token': sub['fcm_token'],
@@ -355,6 +358,7 @@ class InternalController {
   Future<bool> logIn({required String email, required String password}) async {
     try {
       if (_loginService.hasSession) {
+        loggedIn.value = true;
         if (null == _employee || _loginService.userID != _employee?.uuid) {
           await _getEmployeeData();
         }
@@ -362,6 +366,7 @@ class InternalController {
       }
 
       if (await _loginService.logIn(email: email, password: password)) {
+        loggedIn.value = true;
         await _getEmployeeData();
         return true;
       }
@@ -371,7 +376,20 @@ class InternalController {
       return Future.error(e, s);
     }
   }
-
+  
+  
+  Future<void> signOut() async {
+    log('Signing out.');
+    try {
+      await _loginService.signOut();
+      _employee = null;
+      loggedIn.value = false;
+    } on Exception catch (e, s) {
+      _logError(exception: e, stacktrace: s);
+      return Future.error(e, s);
+    }
+  }
+  
   Future<void> _getEmployeeData() async {
     final employeeData = await _databaseService
         .getEntry(table: 'employees', filters: [

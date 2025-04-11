@@ -1,4 +1,3 @@
-import 'package:cypress/app/client/employee_controller.dart';
 import 'package:flutter/material.dart';
 
 import 'app/common/loading.dart';
@@ -11,6 +10,6 @@ import 'view/employee/employee_application.dart';
 /// definitely needs to be checked
 void main() {
   runApp(EmployeeApplication(
-    initializeController: initializeControllerWithSupabase() as Future<EmployeeController>,
+    initializeController: initializeInternalControllerWithSupabase() 
   ));
 }
