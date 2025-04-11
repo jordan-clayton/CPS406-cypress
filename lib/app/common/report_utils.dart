@@ -17,7 +17,7 @@ num duplicateReportScore({required Report r1, required Report r2}) {
   score += (r1.category == r2.category) ? constants.categoryScore : 0.0;
   score += constants.frequencyWeight *
       reportWordSimilarity(desc1: r1.description, desc2: r2.description);
-  return max(score, 100);
+  return min(score, 1);
 }
 
 bool reportCloseTo({required Report r1, required Report r2}) =>
