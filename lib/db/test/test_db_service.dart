@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:collection/collection.dart';
 import 'package:cypress/db/interface/query.dart';
 import 'package:uuid/uuid.dart';
@@ -38,7 +40,7 @@ class MockDatabaseService implements DatabaseService {
     final Map<String, dynamic> returned = {};
     // TODO: extract to function.
     if (null != retrieveColumns) {
-      for (var col in (retrieveColumns ?? [])) {
+      for (var col in retrieveColumns) {
         returned[col] = entry[col];
       }
       // Otherwise, duplicate the entry record to simulate returning the inserted record.
@@ -125,7 +127,12 @@ class MockDatabaseService implements DatabaseService {
       List<DatabaseOrdering>? order,
       int? limit,
       DatabaseRange? range}) async {
-    final dbTable = _mockDatabase[table]!;
+    final dbTable = _mockDatabase[table];
+    if (null == dbTable) {
+      log('Invalid table: $table');
+      log('Tables in mock db: ${_mockDatabase.keys}');
+      throw Exception('Invalid table');
+    }
 
     // Filter based on columns.
     var filtered = dbTable.where((entry) {
@@ -136,7 +143,7 @@ class MockDatabaseService implements DatabaseService {
           true, (acc, filter) => acc && (filter.value == entry[filter.column]));
     });
 
-    for (var o in order!) {
+    for (var o in (order ?? [])) {
       filtered = filtered.sorted((p, c) {
         if (p[o.column] < c[o.column]) {
           return -1;
@@ -147,6 +154,7 @@ class MockDatabaseService implements DatabaseService {
         return 0;
       });
     }
+
     if (null != range) {
       return filtered
           .whereIndexed((i, entry) => i >= range.to && i <= range.from)
@@ -155,6 +163,7 @@ class MockDatabaseService implements DatabaseService {
     if (null != limit) {
       return filtered.take(limit).toList();
     }
+
     return filtered.toList();
   }
 
