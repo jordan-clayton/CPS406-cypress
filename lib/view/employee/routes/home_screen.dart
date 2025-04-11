@@ -32,14 +32,12 @@ class _HomeScreenState extends State<HomeScreen>
     with WidgetsBindingObserver, RouteAware {
   late ValueNotifier<bool> _loading;
   List<Report> _reports = [];
-  late ScrollController _scrollController;
   late Timer _queryTimer;
   late bool _isVisible;
 
   @override
   initState() {
     super.initState();
-    _scrollController = ScrollController();
     _resetQueryTimer();
     _loadReports();
     _isVisible = true;
@@ -212,7 +210,7 @@ class _HomeScreenState extends State<HomeScreen>
                 Positioned.fill(
                   child: _reports.isEmpty 
                   ? const Center(child: CircularProgressIndicator())
-                  :  ReportList(reports: _reports)
+                  :  ReportList(reports: _reports, controller: widget.controller,)
                   ),
                   
                 const FloatingMenuButton(),
