@@ -77,5 +77,24 @@ If you encounter issues building the project, try running:
 
 `flutter clean && flutter pub get`
 
-At this time, the internal application is not implemented. Instructions
-for building will follow once the solution exists.
+And then rebuild the project
+
+### Building the employee application
+
+If you have not grabbed dependencies, run:
+
+`flutter pub get`
+
+To run the employee app (in debug mode) run the following command prompt:
+
+`flutter run -t lib/employee.dart`
+
+To build the employee exectuable in release mode, run the following:
+
+`flutter build <your platform> -t lib/employee.dart --release`
+
+If you encounter issues building the project, try running:
+
+`flutter clean && flutter pub get`
+
+And then rebuild the project
