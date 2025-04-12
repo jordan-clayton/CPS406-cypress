@@ -309,7 +309,7 @@ class InternalController {
     final subscriberData = await _databaseService.getEntries(
         table: 'subscriptions',
         columns: [
-          'notification_method',
+          'method',
           'profiles(*)'
         ],
         filters: [
@@ -320,7 +320,7 @@ class InternalController {
     final subscriberInfo = subscriberData.map((e) {
       final sub = e['profiles'] ?? {};
       return {
-        'notification_method': e['notification_method'],
+        'method': e['method'],
         'fcm_token': sub['fcm_token'],
         'email': sub['email'],
         'phone': sub['phone']

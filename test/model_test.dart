@@ -2,6 +2,7 @@
 
 import 'package:cypress/app/client/client_controller.dart';
 import 'package:cypress/app/common/constants.dart' as constants;
+import 'package:cypress/app/common/report_utils.dart' as report_utils;
 import 'package:cypress/app/common/report_utils.dart';
 import 'package:cypress/app/common/utils.dart';
 import 'package:cypress/app/common/validation.dart';
@@ -12,6 +13,7 @@ import 'package:cypress/location/test/fallback_location_service.dart';
 import 'package:cypress/login/test/test_login_service.dart';
 import 'package:cypress/models/employee.dart';
 import 'package:cypress/models/report.dart';
+import 'package:cypress/models/subscription.dart';
 import 'package:cypress/models/user.dart';
 import 'package:cypress/notification/impl/internal_notification_service.dart';
 import 'package:cypress/notification/impl/notification_service_impl.dart';
@@ -581,7 +583,102 @@ void main() {
           reason:
               'Report mismatch. Received: ${checkReport.id}, Expected: ${updatedReport.id}');
     });
-    test('ID_4.4 - Verify notifications for updates on issues', () {});
+    // If this test reaches the end of execution, consider it passed.
+    // The notification service calls as part of the update routine and will throw on a failure.
+    test('ID_4.4 - Verify notifications for updates on issues', () async {
+      // Set up the database with an in-progress report and user
+      const mockReport = Report(
+          id: 0,
+          category: ProblemCategory.crime,
+          latitude: constants.torontoLat,
+          longitude: constants.torontoLong,
+          description: 'A terrible crime has occured, methinks',
+          verified: true,
+          progress: ProgressStatus.inProgress);
+      final seedUser = User(id: '', email: 'testEmail@gmail.com');
+      final subscriber = User(id: '', email: 'subscriber@gmail.com');
+      var db = seedDatabaseWithProfiles(
+          userProfiles: [seedUser, subscriber],
+          startingDatabase: seedDatabaseWithReports(reports: [mockReport]));
+      // Get the userID.
+      final userID = db['profiles']!.first['id'];
+      // Since these aren't hashed, the subscriber will be second.
+      final subscriberID = db['profiles']![1]['id'];
+      // Seed an employee entry
+      final employee = Employee(uuid: userID, employeeID: 0);
+      db = seedDatabaseWithEmployees(
+          employeeProfiles: [employee], startingDatabase: db);
+
+      // Seed a subscription
+      final subscription = Subscription(
+          userID: subscriberID,
+          reportID: mockReport.id,
+          notificationMethod: NotificationMethod.email);
+      db = seedDatabaseWithSubscriptions(
+          subscriptions: [subscription], startingDatabase: db);
+
+      final dbService = MockDatabaseService(seedData: db);
+      final loginService = MockLoginService.withMockedCredentials(
+        fakeClientEmail: seedUser.email,
+        fakeClientPassword: 'fakePassword',
+        fakeUserID: userID,
+      );
+
+      final notificationService = InternalNotifcationService(
+          sms: SmsNotificationServiceImpl(),
+          email: EmailNotificationServiceImpl(),
+          push: PushNotificationServiceImpl());
+
+      final controller = InternalController(
+          databaseService: dbService,
+          loginService: loginService,
+          notificationService: notificationService);
+
+      // Ensure login works.
+      expect(
+          await controller.logIn(
+              email: 'testEmail@gmail.com', password: 'fakePassword'),
+          true,
+          reason: 'Failed to log employee in');
+      expect(controller.loggedIn.value, true,
+          reason: 'Failed to log in employee');
+
+      // Check that the verified report is in-progress
+      final openedVerifiedReports = await controller.getVerifiedOpenedReports();
+      expect(openedVerifiedReports['in-progress']!.length, 1,
+          reason: 'Verified in-progress report is not in the database');
+
+      // Update the report to closed.
+      final updatedReport = openedVerifiedReports['in-progress']!.first;
+      // Ensure copywith works
+      final testCopyWith =
+          updatedReport.copyWith(progress: ProgressStatus.closed);
+      expect(ProgressStatus.closed == testCopyWith.progress, true,
+          reason: 'Copywith failure with ProgressStatus.closed');
+
+      // If interested, check the debugger to see that this does retrieve
+      // non-joined data.
+      // At this time, it does not use the production implementation which would throw.
+      await controller.updateReport(
+          report: updatedReport.copyWith(progress: ProgressStatus.closed));
+
+      // Instead, mock with the notification service
+      final closedReports = await controller.getClosed();
+      expect(closedReports.length, 1, reason: 'Report was not closed');
+      final closedReport = closedReports.first;
+      final message = report_utils.generateReportMessage(r: closedReport);
+      final storedSubscriptionData = db['subscriptions']!.first;
+      final subscriptionInfo = db['profiles']![1];
+      // Remove the id.
+      subscriptionInfo.remove('id');
+      subscriptionInfo['method'] = storedSubscriptionData['method'];
+
+      // Expect this will not throw.
+      expect(
+          () => notificationService.sendNotifications(
+              message: message, clientInfo: [subscriptionInfo]),
+          returnsNormally);
+    });
     test('ID_4.5 - Flagging a fraudulent report', () {});
   });
 
