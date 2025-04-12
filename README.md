@@ -21,6 +21,19 @@ A real-time issue reporting and tracking system for the City of Toronto
 
 ## Features
 
+### Citizen-facing application
+Users can use the Cypress app to view information about current City-wide emergencies and problems
+on an intuitive (hopefully), interactive map in real time. They may optionally register for an account to be able to file
+new report tickets with the city. Good-natured citizens can also moderate by flagging duplicate and
+malicious reports to the city.
+
+### Employee-facing application
+For City of Toronto employees. Authenticated users can use the GUI to view incoming reports, as well
+as monitor and update the progress of currently open reports.
+A suite of tools is provided for software-assisted verification and validation, and measuring duplicate reports.
+
+The project in its current iteration uses Supabase to host its backend database.
+
 ### Implemented
 
 - GUI for users to view issues in real time on an intuitive map
@@ -32,11 +45,11 @@ A real-time issue reporting and tracking system for the City of Toronto
 - Subscription API to allow users to track report updates
 - User-led moderation API to allow users to flag duplicates and malicious reports
 - Client and Internal application controller APIs to interact with the system
+- Test suite implementation
+- GUI for internal City of Toronto use
 
 ### Roadmap
-
-- Test suite implementation and integration
-- GUI for internal City of Toronto use
+- Client accessible report list views and sorting.
 
 ## Building
 ### Dependencies:
