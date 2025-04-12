@@ -1,5 +1,3 @@
-// TODO!
-
 import 'package:cypress/app/client/client_controller.dart';
 import 'package:cypress/app/common/constants.dart' as constants;
 import 'package:cypress/app/common/report_utils.dart' as report_utils;
@@ -586,6 +584,10 @@ void main() {
     });
     // If this test reaches the end of execution, consider it passed.
     // The notification service calls as part of the update routine and will throw on a failure.
+
+    // At the moment, there is no 'join' in the mock database and is therefore impossible to simulate the join query in unit testing.
+    // The notificationService in the controller handles and just skips over the routine.
+    // The notificationService is explicitly tested with the correct data at the end.
     test('ID_4.4 - Verify notifications for updates on issues', () async {
       // Set up the database with an in-progress report and user
       const mockReport = Report(
@@ -762,8 +764,175 @@ void main() {
 
   group('Section 5: UI testing', () {
     // This test should pass if the database returns the expected number of reports.
-    test('ID_5.1 - Map functionality-view previous reported issues', () {});
-    test('ID_5.4 - Validating reports-unverified reports', () {});
-    test('ID_5.5 - Validating reports-unverified reports', () {});
+    test('ID_5.1 - Map functionality-view previous reported issues', () async {
+      // Mock user
+      final seedUser = User(id: '', email: 'testEmail@gmail.com');
+
+      // Set up database
+      final db = seedDatabaseWithProfiles(userProfiles: [seedUser]);
+      // Get the user id.
+      final userID = db['profiles']!.first['id'];
+
+      final dbService = MockDatabaseService(seedData: db);
+
+      // Set up login service
+      final loginService = MockLoginService.withMockedCredentials(
+        fakeClientEmail: seedUser.email!,
+        fakeClientPassword: 'fakePassword',
+        fakeUserID: userID,
+      );
+
+      // Set up location service
+      final locationService = FallbackLocationService();
+
+      // Set up controller.
+      final controller = ClientController(
+          databaseService: dbService,
+          loginService: loginService,
+          locationService: locationService);
+
+      // Simulate valid login.
+      expect(
+        await controller.logIn(
+            email: 'testEmail@gmail.com', password: 'fakePassword'),
+        true,
+      );
+
+      expect(controller.loggedIn.value, true, reason: 'Failed to log in user');
+
+      // Make some reports as the user.
+      const reportTemplate = Report(
+          id: 0,
+          category: ProblemCategory.crime,
+          latitude: constants.torontoLat,
+          longitude: constants.torontoLong,
+          description: 'This is a fake report');
+      for (int i = 0; i < 3; ++i) {
+        // Place the report in the database.
+        await controller.makeReport(newReport: reportTemplate.copyWith(id: i));
+      }
+
+      // Grab a list of reports (which would be shown in the GUI).
+      final currentReports = await controller.getCurrentReports();
+      expect(currentReports.isNotEmpty, true,
+          reason: 'Failed to retrieve from the database');
+      expect(currentReports.length, 3,
+          reason:
+              'Unexpected reports list length: ${currentReports.length}, expected: 3');
+    });
+    test('ID_5.5 - Validating reports-unverified reports', () async {
+      // Mock user
+      final seedUser = User(id: '', email: 'testEmail@gmail.com');
+      // Mock employee
+      final seedEmployee = User(id: '', email: 'employee@gmail.com');
+
+      // Set up database
+      var db = seedDatabaseWithProfiles(userProfiles: [seedUser, seedEmployee]);
+      // Get the user id.
+      final userID = db['profiles']!.first['id'];
+      // Get the employee id
+      final employeeID = db['profiles']![1]['id'];
+
+      // Seed the employee data.
+      final employee = Employee(uuid: employeeID, employeeID: 0);
+      db = seedDatabaseWithEmployees(
+          employeeProfiles: [employee], startingDatabase: db);
+
+      final dbService = MockDatabaseService(seedData: db);
+
+      // Set up login services
+      final clientLoginService = MockLoginService.withMockedCredentials(
+        fakeClientEmail: seedUser.email!,
+        fakeClientPassword: 'fakePassword',
+        fakeUserID: userID,
+      );
+
+      final employeeLoginService = MockLoginService.withMockedCredentials(
+          fakeClientEmail: seedEmployee.email,
+          fakeClientPassword: 'fakePassword',
+          fakeUserID: employeeID);
+
+      // Set up location service
+      final locationService = FallbackLocationService();
+
+      // Set up client controller.
+      final clientController = ClientController(
+          databaseService: dbService,
+          loginService: clientLoginService,
+          locationService: locationService);
+
+      // Set up employee controller.
+      final notificationService = InternalNotifcationService(
+          sms: SmsNotificationServiceImpl(),
+          email: EmailNotificationServiceImpl(),
+          push: PushNotificationServiceImpl());
+
+      final employeeController = InternalController(
+          databaseService: dbService,
+          loginService: employeeLoginService,
+          notificationService: notificationService);
+
+      // Simulate valid login.
+      expect(
+        await clientController.logIn(
+            email: 'testEmail@gmail.com', password: 'fakePassword'),
+        true,
+      );
+
+      expect(clientController.loggedIn.value, true,
+          reason: 'Failed to log in user');
+
+      // Make some reports as the user.
+      const reportTemplate = Report(
+          id: 0,
+          category: ProblemCategory.crime,
+          latitude: constants.torontoLat,
+          longitude: constants.torontoLong,
+          description: 'This is a fake report');
+      for (int i = 0; i < 3; ++i) {
+        // Place the report in the database.
+        await clientController.makeReport(
+            newReport: reportTemplate.copyWith(id: i));
+      }
+
+      // Test that the list of reports is retrieved okay.
+      final currentReports = await clientController.getCurrentReports();
+      expect(currentReports.isNotEmpty, true,
+          reason: 'Failed to retrieve from the database');
+      expect(currentReports.length, 3,
+          reason:
+              'Unexpected reports list length: ${currentReports.length}, expected: 3');
+
+      // Employee functionality.
+      // Log the employee in
+      await employeeController.logIn(
+          email: seedEmployee.email!, password: 'fakePassword');
+
+      // Grab the unverified reports.
+      final unverifiedReports = await employeeController.getUnverified();
+      expect(unverifiedReports.isNotEmpty, true,
+          reason: 'Client failed to insert records in db');
+      expect(unverifiedReports.length, 3,
+          reason:
+              'Unexpected number of unverified reports: ${unverifiedReports.length}');
+
+      // Verify the reports.
+      for (var report in unverifiedReports) {
+        await employeeController.updateReport(
+            report: report.copyWith(verified: true));
+      }
+
+      // Grab the reports as the client and ensure they were all verified.
+      final newCurrentReports = await clientController.getCurrentReports();
+      expect(newCurrentReports.isNotEmpty, true,
+          reason: 'Failed to retrieve from the database');
+      expect(newCurrentReports.length, 3,
+          reason:
+              'Unexpected reports list length: ${currentReports.length}, expected: 3');
+
+      final allVerified =
+          newCurrentReports.fold(true, (acc, report) => acc && report.verified);
+      expect(allVerified, true, reason: 'Reports were not properly verified');
+    });
   });
 }

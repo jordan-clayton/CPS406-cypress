@@ -326,7 +326,6 @@ class InternalController {
         'phone': sub['phone']
       };
     }).toList();
-
     _notificationService.sendNotifications(
         message: message, clientInfo: subscriberInfo, payload: report.id);
   }
