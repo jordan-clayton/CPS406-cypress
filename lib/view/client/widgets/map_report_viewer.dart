@@ -99,13 +99,54 @@ class _ReportViewerMapState extends State<ReportViewerMap> {
         }
         // To reduce flickering on bg refresh, use the cached _markers.
         children.add(MarkerLayer(markers: _markers));
-        return FlutterMap(
-          mapController: _mapController,
-          options: MapOptions(
+        return Stack(
+        children: [
+          FlutterMap(
+            mapController: _mapController,
+            options: MapOptions(
             initialCenter: widget.controller.clientLocation,
             initialZoom: 15,
+            minZoom: 3,
+            maxZoom: 18,
+            interactionOptions: const InteractionOptions(
+              flags: InteractiveFlag.all, // This replaces individual enables
+            ),
           ),
-          children: children,
+            children: children,
+          ),
+          Positioned(
+            top: 10,
+            right: 10,
+            child: Column(
+              children: [
+                FloatingActionButton(
+                  mini: true,
+                  heroTag: 'zoomIn',
+                  onPressed: () {
+                    _mapController.move(
+                      _mapController.camera.center,
+                      _mapController.camera.zoom + 1,
+                    );
+                  },
+                  child: const Icon(Icons.add),
+                ),
+                const SizedBox(height: 8),
+                FloatingActionButton(
+                  mini: true,
+                  heroTag: 'zoomOut',
+                  onPressed: () {
+                    _mapController.move(
+                      _mapController.camera.center,
+                      _mapController.camera.zoom - 1,
+                    );
+                  },
+                  child: const Icon(Icons.remove),
+                ),
+                ],
+              ),
+            ),
+          ],
         );
-      });
-}
+      },
+    );
+  }
