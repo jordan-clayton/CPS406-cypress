@@ -4,7 +4,7 @@ A real-time issue reporting and tracking system for the City of Toronto
 
 ## Team Members:
 
-- Jordan Clayton: 501201305
+- Jordan Clayton: 501201350
 - Suchana Regmi: 501173160
 - Rizoan Azfar: 501237799
 - Suhaib Khan: 501112462
