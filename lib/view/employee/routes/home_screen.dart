@@ -28,6 +28,7 @@ class HomeScreen extends StatefulWidget {
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
+
 class _HomeScreenState extends State<HomeScreen>
     with WidgetsBindingObserver, RouteAware {
   late ValueNotifier<bool> _loading;
@@ -35,6 +36,12 @@ class _HomeScreenState extends State<HomeScreen>
   late Timer _queryTimer;
   late bool _isVisible;
 
+  bool showUnverified = true;
+  bool showVerified = false;
+  // bool showDuplicates = false;
+  // bool showFlagged = false;
+  bool showClosed = false;
+  
   @override
   initState() {
     super.initState();
@@ -110,13 +117,44 @@ class _HomeScreenState extends State<HomeScreen>
     });
   }
 
+
+
+
   Future<void> _loadReports() async {
-    final reports = await widget.controller.getUnverified();
+    List<Report> reports = [];
+    
+    if (showUnverified){
+      reports += await widget.controller.getUnverified();
+    }
+    if (showClosed) {
+      reports += await widget.controller.getClosed();
+    }
+    if (showVerified){
+      final groupedReports = await widget.controller.getVerifiedOpenedReports();
+      reports += groupedReports['opened'] ?? [];
+      reports += groupedReports['in-progress'] ?? [];
+    }
+    
+    
     setState(() {
       _reports = reports;
     });
   }
+  
+  Widget filterButton(String label, bool selected, VoidCallback onPressed) {
+  return Padding(
+    padding: const EdgeInsets.symmetric(horizontal: 4.0),
+    child: ElevatedButton(
+      onPressed: onPressed,
+      style: ElevatedButton.styleFrom(
+        backgroundColor: selected ? const Color.fromARGB(60, 218, 208, 208) : null,
+      ),
+      child: Text(label),
+    ),
+  );
+}
 
+  
   @override
   Widget build(BuildContext context) {
     final apple = os_detect.isMacOS || os_detect.isIOS;
@@ -206,6 +244,49 @@ class _HomeScreenState extends State<HomeScreen>
                 ]),
               ),
               body: Stack(children: [
+                 Positioned.fill(
+                  child: Column(
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: SingleChildScrollView(
+                          scrollDirection: Axis.horizontal,
+                          child: Row(
+                            children: [
+                              filterButton("Unverified", showUnverified, () {
+                              setState(() {
+                                showUnverified = true;
+                                showVerified = false;
+                                showClosed = false;
+                                
+                              _loadReports();
+                              });
+                              }),
+                              filterButton("Verifed", showVerified, () {
+                              setState(() {
+                                showUnverified = false;
+                                showVerified = true;
+                                showClosed = false;
+                                
+                              _loadReports();
+                              });
+                              }),
+                              filterButton("Closed", showClosed, () {
+                                setState(() {
+                                  showUnverified = false;
+                                  showVerified = false;
+                                  showClosed = true;
+                                  _loadReports();
+                                });
+                              }),
+                            ],
+                          ),
+                        )
+                      )
+                    ],
+                  )
+                ),
+                
                 Positioned.fill(
                     child: _reports.isEmpty
                         ? const Center(child: CircularProgressIndicator())

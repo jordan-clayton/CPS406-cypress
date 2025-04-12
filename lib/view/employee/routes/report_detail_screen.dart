@@ -27,10 +27,12 @@ class _ReportDetailScreenState extends State<ReportDetailScreen>
     with WidgetsBindingObserver {
   // Guard against grandma clicks.
   late ValueNotifier<bool> _loading;
+  late ProgressStatus _selectedStatus;
 
   @override
   initState() {
     super.initState();
+    _selectedStatus = widget.report.progress;
     _loading = ValueNotifier(false);
   }
 
@@ -79,23 +81,84 @@ class _ReportDetailScreenState extends State<ReportDetailScreen>
                 tileColor: Theme.of(context).colorScheme.error),
         const Divider(),
 
-        const Divider(),
         // Progress status
-        switch (widget.report.progress) {
-          ProgressStatus.opened => const ListTile(
-              leading: Icon(Icons.start_rounded),
-              title: Text('Opened'),
-              subtitle: Text('Progress status'),
+        ListTile(
+          title:  DropdownButton<ProgressStatus>(
+            value: _selectedStatus,
+            icon: const Icon(Icons.arrow_drop_down),
+            isExpanded: true,
+            underline: const SizedBox.shrink(),
+            onChanged: (ProgressStatus? newValue) {
+              if (newValue != null) {
+                setState(() async {
+                  _selectedStatus = newValue;
+                  await widget.controller
+                      .updateReport(
+                          report:
+                              widget.report.copyWith(progress: _selectedStatus))
+                      .then((_) {
+                    if (mounted) {
+                      Navigator.pop(this.context, true);
+                    }
+                  }, onError: (_) {
+                    if (!mounted) {
+                      return;
+                    }
+                  });
+                });
+              }
+            },
+            items: ProgressStatus.values.map((status) {
+              late final Icon icon;
+              late final String label;
+
+              switch (status) {
+                case ProgressStatus.opened:
+                  icon = const Icon(Icons.start_rounded);
+                  label = 'Opened';
+                  break;
+                case ProgressStatus.inProgress:
+                  icon = const Icon(Icons.track_changes_rounded);
+                  label = 'In Progress';
+                  break;
+                case ProgressStatus.closed:
+                  icon = const Icon(Icons.done_all_rounded);
+                  label = 'Closed';
+                  break;
+              }
+
+              return DropdownMenuItem<ProgressStatus>(
+                value: status,
+                child: Row(
+                  children: [
+                    icon,
+                    const SizedBox(width: 8),
+                    Text(label),
+                  ],
+                ), // Custom label
+              );
+            }).toList(),
+          ),
+          subtitle: const Padding(
+            padding: EdgeInsets.only(left: 32.0),
+            child: Text("Progress status"),
             ),
-          ProgressStatus.inProgress => const ListTile(
-              leading: Icon(Icons.track_changes_rounded),
-              title: Text('In Progress'),
-              subtitle: Text('Progress status')),
-          ProgressStatus.closed => const ListTile(
-              leading: Icon(Icons.done_all_rounded),
-              title: Text('Closed'),
-              subtitle: Text('Progress status')),
-        },
+        ),
+        // switch (widget.report.progress) {
+        //   ProgressStatus.opened => const ListTile(
+        //       leading: Icon(Icons.start_rounded),
+        //       title: Text('Opened'),
+        //       subtitle: Text('Progress status'),
+        //     ),
+        //   ProgressStatus.inProgress => const ListTile(
+        //       leading: Icon(Icons.track_changes_rounded),
+        //       title: Text('In Progress'),
+        //       subtitle: Text('Progress status')),
+        //   ProgressStatus.closed => const ListTile(
+        //       leading: Icon(Icons.done_all_rounded),
+        //       title: Text('Closed'),
+        //       subtitle: Text('Progress status')),
+        // },
         const Divider(),
         // Category
         ListTile(
