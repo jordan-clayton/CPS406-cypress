@@ -60,93 +60,107 @@ class _ReportViewerMapState extends State<ReportViewerMap> {
 
   @override
   Widget build(context) => FutureBuilder(
-      future: widget.controller.getCurrentReports(),
-      builder: (context, snapshot) {
-        // For "Apple-y" page transitions.
-        final apple = os_detect.isMacOS || os_detect.isIOS;
+        future: widget.controller.getCurrentReports(),
+        builder: (context, snapshot) {
+          // For "Apple-y" page transitions.
+          final apple = os_detect.isMacOS || os_detect.isIOS;
 
-        List<Widget> children = [mapLayer, mapAttribution];
-        // If an error handler has been provided, call it on an error.
-        if (snapshot.hasError) {
-          widget.handleError?.call();
-        }
-        // Fill the children/marker layer.
-        if (snapshot.connectionState == ConnectionState.done) {
-          _markers = snapshot.data
-                  ?.map((r) => Marker(
-                        point: LatLng(
-                            r.latitude.toDouble(), r.longitude.toDouble()),
-                        width: 40,
-                        height: 40,
-                        child: GestureDetector(
-                          onTap: () => Navigator.push(
-                              context,
-                              (apple)
-                                  ? CupertinoPageRoute(
-                                      builder: (context) => ReportDetailScreen(
-                                          report: r,
-                                          controller: widget.controller))
-                                  : MaterialPageRoute(
-                                      builder: (context) => ReportDetailScreen(
-                                          report: r,
-                                          controller: widget.controller))),
-                          child: const Icon(Icons.location_pin,
-                              size: 40, color: Colors.black),
-                        ),
-                      ))
-                  .toList(growable: false) ??
-              [];
-        }
-        // To reduce flickering on bg refresh, use the cached _markers.
-        children.add(MarkerLayer(markers: _markers));
-        return Stack(
-        children: [
-          FlutterMap(
-            mapController: _mapController,
-            options: MapOptions(
-            initialCenter: widget.controller.clientLocation,
-            initialZoom: 15,
-            minZoom: 3,
-            maxZoom: 18,
-            interactionOptions: const InteractionOptions(
-              flags: InteractiveFlag.all, // This replaces individual enables
-            ),
-          ),
-            children: children,
-          ),
-          Positioned(
-            top: 10,
-            right: 10,
-            child: Column(
-              children: [
-                FloatingActionButton(
-                  mini: true,
-                  heroTag: 'zoomIn',
-                  onPressed: () {
-                    _mapController.move(
-                      _mapController.camera.center,
-                      _mapController.camera.zoom + 1,
-                    );
-                  },
-                  child: const Icon(Icons.add),
+          List<Widget> children = [mapLayer, mapAttribution];
+          // If an error handler has been provided, call it on an error.
+          if (snapshot.hasError) {
+            widget.handleError?.call();
+          }
+          // Fill the children/marker layer.
+          if (snapshot.connectionState == ConnectionState.done) {
+            _markers = snapshot.data
+                    ?.map((r) => Marker(
+                          point: LatLng(
+                              r.latitude.toDouble(), r.longitude.toDouble()),
+                          width: 40,
+                          height: 40,
+                          child: GestureDetector(
+                            onTap: () => Navigator.push(
+                                context,
+                                (apple)
+                                    ? CupertinoPageRoute(
+                                        builder: (context) =>
+                                            ReportDetailScreen(
+                                                report: r,
+                                                controller: widget.controller))
+                                    : MaterialPageRoute(
+                                        builder: (context) =>
+                                            ReportDetailScreen(
+                                                report: r,
+                                                controller:
+                                                    widget.controller))),
+                            child: const Icon(Icons.location_pin,
+                                size: 40, color: Colors.black),
+                          ),
+                        ))
+                    .toList(growable: false) ??
+                [];
+          }
+          // To reduce flickering on bg refresh, use the cached _markers.
+          children.add(MarkerLayer(markers: _markers));
+          return Stack(
+            children: [
+              FlutterMap(
+                mapController: _mapController,
+                options: MapOptions(
+                  initialCenter: widget.controller.clientLocation,
+                  initialZoom: 15,
+                  minZoom: 3,
+                  maxZoom: 18,
+                  interactionOptions: const InteractionOptions(
+                    flags:
+                        InteractiveFlag.all, // This replaces individual enables
+                  ),
                 ),
-                const SizedBox(height: 8),
-                FloatingActionButton(
-                  mini: true,
-                  heroTag: 'zoomOut',
-                  onPressed: () {
-                    _mapController.move(
-                      _mapController.camera.center,
-                      _mapController.camera.zoom - 1,
-                    );
-                  },
-                  child: const Icon(Icons.remove),
-                ),
-                ],
+                children: children,
               ),
-            ),
-          ],
-        );
-      },
-    );
-  }
+              Positioned(
+                top: 10,
+                right: 10,
+                child: Column(
+                  children: [
+                    FloatingActionButton(
+                      mini: true,
+                      heroTag: 'zoomIn',
+                      onPressed: () {
+                        if (!mounted) {
+                          return;
+                        }
+                        setState(() {
+                          _mapController.move(
+                            _mapController.camera.center,
+                            _mapController.camera.zoom + 1,
+                          );
+                        });
+                      },
+                      child: const Icon(Icons.add),
+                    ),
+                    const SizedBox(height: 8),
+                    FloatingActionButton(
+                      mini: true,
+                      heroTag: 'zoomOut',
+                      onPressed: () {
+                        if (!mounted) {
+                          return;
+                        }
+                        setState(() {
+                          _mapController.move(
+                            _mapController.camera.center,
+                            _mapController.camera.zoom - 1,
+                          );
+                        });
+                      },
+                      child: const Icon(Icons.remove),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          );
+        },
+      );
+}
