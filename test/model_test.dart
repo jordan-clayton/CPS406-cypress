@@ -12,6 +12,7 @@ import 'package:cypress/db/test/test_db_utils.dart';
 import 'package:cypress/location/test/fallback_location_service.dart';
 import 'package:cypress/login/test/test_login_service.dart';
 import 'package:cypress/models/employee.dart';
+import 'package:cypress/models/flagged.dart';
 import 'package:cypress/models/report.dart';
 import 'package:cypress/models/subscription.dart';
 import 'package:cypress/models/user.dart';
@@ -679,7 +680,84 @@ void main() {
               message: message, clientInfo: [subscriptionInfo]),
           returnsNormally);
     });
-    test('ID_4.5 - Flagging a fraudulent report', () {});
+
+    test('ID_4.5 - Flagging a fraudulent report', () async {
+      // Mock user
+      final seedUser = User(id: '', email: 'testEmail@gmail.com');
+
+      // Set up database
+      final db = seedDatabaseWithProfiles(userProfiles: [seedUser]);
+      // Get the user id.
+      final userID = db['profiles']!.first['id'];
+
+      final dbService = MockDatabaseService(seedData: db);
+
+      // Set up login service
+      final loginService = MockLoginService.withMockedCredentials(
+        fakeClientEmail: seedUser.email!,
+        fakeClientPassword: 'fakePassword',
+        fakeUserID: userID,
+      );
+
+      // Set up location service
+      final locationService = FallbackLocationService();
+
+      // Set up controller.
+      final controller = ClientController(
+          databaseService: dbService,
+          loginService: loginService,
+          locationService: locationService);
+
+      // Simulate valid login.
+      expect(
+        await controller.logIn(
+            email: 'testEmail@gmail.com', password: 'fakePassword'),
+        true,
+      );
+
+      expect(controller.loggedIn.value, true, reason: 'Failed to log in user');
+
+      // Make a fraudulent report as the user.
+      const fakeReport = Report(
+          id: 0,
+          category: ProblemCategory.crime,
+          latitude: constants.torontoLat,
+          longitude: constants.torontoLong,
+          description: 'This is a fake report');
+
+      // Place the report in the database.
+      await controller.makeReport(newReport: fakeReport);
+      // Mark the report as flagged.
+      await controller.flagReport(
+          flaggedID: fakeReport.id, reason: FlaggedReason.falseReport);
+
+      // Check the database for flagged reports.
+      expect(db['flagged']!.isNotEmpty, true,
+          reason: 'Flagged report not placed in db');
+      expect(db['flagged']!.length, 1,
+          reason:
+              'Invalid number of flagged reports, length: ${db['flagged']!.length}, expected: 1');
+
+      const matchID = 1;
+      final duplicateReport = fakeReport.copyWith(
+          id: matchID, description: 'This is a duplicate report');
+
+      // Duplicate the report.
+      await controller.makeReport(newReport: duplicateReport);
+      const duplicateID = 2;
+      await controller.makeReport(
+          newReport: duplicateReport.copyWith(id: duplicateID));
+
+      await controller.reportDuplicate(
+          suspectedDupID: duplicateID, matchID: matchID);
+
+      // Check the database for duplicates.
+      expect(db['duplicates']!.isNotEmpty, true,
+          reason: 'Duplicate not recorded in db');
+      expect(db['duplicates']!.length, 1,
+          reason:
+              'Invalid number of duplicate reports, length: ${db['flagged']!.length}, expected: 1');
+    });
   });
 
   group('Section 5: UI testing', () {
